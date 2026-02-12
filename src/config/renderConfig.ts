@@ -9,7 +9,7 @@ export const RENDER_CONFIG = {
   
   // Seed point styling
   seedPointColor: '#ff0000',
-  seedPointRadiusFraction: 0.005, // 0.5% of min dimension
+  seedPointRadiusFraction: 0.002, // 0.5% of min dimension
   
   // Default UI values
   defaultSeedDensity: 100,

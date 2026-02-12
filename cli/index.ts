@@ -1,0 +1,209 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import sharp from 'sharp';
+import { runPipeline, type PixelSource } from '../src/core/pipeline';
+import { buildVoronoiSvg } from '../src/core/svgExport';
+import type { SeedStrategy } from '../src/core/types';
+import { RENDER_CONFIG } from '../src/config/renderConfig';
+
+interface CliOptions {
+  input: string;
+  output?: string;
+  seedDensity: number;
+  seedValue: string;
+  seedStrategy: SeedStrategy;
+  showCells: boolean;
+  showVoronoi: boolean;
+  showSeeds: boolean;
+  scale: number;
+}
+
+class SharpPixelSource implements PixelSource {
+  width: number;
+  height: number;
+  private readonly imageData: Uint8ClampedArray;
+
+  constructor(width: number, height: number, data: Uint8ClampedArray) {
+    this.width = width;
+    this.height = height;
+    this.imageData = data;
+  }
+
+  getImageData() {
+    return {
+      width: this.width,
+      height: this.height,
+      data: this.imageData,
+    };
+  }
+}
+
+function usage(): string {
+  return [
+    'Usage:',
+    '  npm run cli -- --input <path> [options]',
+    '',
+    'Options:',
+    '  --input <path>            Input image path (required)',
+    '  --output <path>           Output SVG path (default: <input>.svg)',
+    '  --seed-density <number>   Seed density (default: 100)',
+    '  --seed-value <string>     Seed value (default: 12345)',
+    '  --seed-strategy <mode>    aspect|maxAspect (default: aspect)',
+    '  --show-cells <bool>       true|false (default: true)',
+    '  --show-voronoi <bool>     true|false (default: true)',
+    '  --show-seeds <bool>       true|false (default: false)',
+    '  --scale <number>          Output scale factor (default: 1)',
+    '  --help                    Show this help',
+  ].join('\n');
+}
+
+function toBool(value: string, name: string): boolean {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  throw new Error(`Invalid value for ${name}: ${value} (expected true or false)`);
+}
+
+function toNumber(value: string, name: string): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) {
+    throw new Error(`Invalid numeric value for ${name}: ${value}`);
+  }
+  return n;
+}
+
+function parseArgs(argv: string[]): CliOptions {
+  const options: CliOptions = {
+    input: '',
+    output: undefined,
+    seedDensity: RENDER_CONFIG.defaultSeedDensity,
+    seedValue: RENDER_CONFIG.defaultSeedValue,
+    seedStrategy: 'aspect',
+    showCells: true,
+    showVoronoi: true,
+    showSeeds: false,
+    scale: 1,
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (arg === '--help') {
+      console.log(usage());
+      process.exit(0);
+    }
+
+    if (!arg.startsWith('--')) {
+      throw new Error(`Unexpected argument: ${arg}`);
+    }
+
+    const value = argv[i + 1];
+    if (value === undefined || value.startsWith('--')) {
+      throw new Error(`Missing value for ${arg}`);
+    }
+
+    switch (arg) {
+      case '--input':
+        options.input = value;
+        break;
+      case '--output':
+        options.output = value;
+        break;
+      case '--seed-density':
+        options.seedDensity = toNumber(value, '--seed-density');
+        break;
+      case '--seed-value':
+        options.seedValue = value;
+        break;
+      case '--seed-strategy':
+        if (value !== 'aspect' && value !== 'maxAspect') {
+          throw new Error(`Invalid --seed-strategy: ${value}`);
+        }
+        options.seedStrategy = value;
+        break;
+      case '--show-cells':
+        options.showCells = toBool(value, '--show-cells');
+        break;
+      case '--show-voronoi':
+        options.showVoronoi = toBool(value, '--show-voronoi');
+        break;
+      case '--show-seeds':
+        options.showSeeds = toBool(value, '--show-seeds');
+        break;
+      case '--scale':
+        options.scale = toNumber(value, '--scale');
+        break;
+      default:
+        throw new Error(`Unknown option: ${arg}`);
+    }
+
+    i += 1;
+  }
+
+  if (!options.input) {
+    throw new Error('--input is required');
+  }
+
+  if (options.seedDensity <= 0) {
+    throw new Error('--seed-density must be > 0');
+  }
+
+  if (options.scale <= 0) {
+    throw new Error('--scale must be > 0');
+  }
+
+  return options;
+}
+
+function defaultOutputPath(inputPath: string): string {
+  const parsed = path.parse(inputPath);
+  return path.join(parsed.dir, `${parsed.name}.svg`);
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+
+  const raw = await sharp(options.input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const pixelSource = new SharpPixelSource(
+    raw.info.width,
+    raw.info.height,
+    new Uint8ClampedArray(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength)
+  );
+
+  const output = runPipeline(
+    {
+      imageWidth: raw.info.width,
+      imageHeight: raw.info.height,
+      seedDensity: options.seedDensity,
+      seedValue: options.seedValue,
+      seedStrategy: options.seedStrategy,
+      colorMode: 'seedPoint',
+    },
+    pixelSource
+  );
+
+  const outPath = options.output ?? defaultOutputPath(options.input);
+  const svg = buildVoronoiSvg(output, {
+    width: output.imageWidth * options.scale,
+    height: output.imageHeight * options.scale,
+    showCells: options.showCells,
+    showVoronoi: options.showVoronoi,
+    showSeeds: options.showSeeds,
+  });
+  await fs.writeFile(outPath, svg, 'utf8');
+
+  console.log(`Input: ${options.input}`);
+  console.log(`Output: ${outPath}`);
+  console.log(`Seeds: ${output.seedsPx.length}`);
+}
+
+main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`CLI error: ${message}`);
+  console.error('');
+  console.error(usage());
+  process.exit(1);
+});

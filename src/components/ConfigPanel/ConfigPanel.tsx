@@ -25,6 +25,8 @@ interface ConfigPanelProps {
   onShowVoronoiChange: (value: boolean) => void;
   onShowSeedsChange: (value: boolean) => void;
   onExportSVG: () => void;
+  onCopyCLICommand: () => void;
+  copyCLIButtonLabel?: string;
 }
 
 export function ConfigPanel({
@@ -43,6 +45,8 @@ export function ConfigPanel({
   onShowVoronoiChange,
   onShowSeedsChange,
   onExportSVG,
+  onCopyCLICommand,
+  copyCLIButtonLabel = 'Copy CLI Command',
 }: ConfigPanelProps) {
   return (
     <div className="config-panel">
@@ -181,6 +185,12 @@ export function ConfigPanel({
       {/* Export */}
       {imageMeta && (
         <div className="config-panel__section">
+          <button
+            className="config-panel__button config-panel__button--full"
+            onClick={onCopyCLICommand}
+          >
+            {copyCLIButtonLabel}
+          </button>
           <button
             className="config-panel__button config-panel__button--primary"
             onClick={onExportSVG}

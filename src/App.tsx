@@ -3,8 +3,9 @@ import { Dropzone } from './components/Dropzone/Dropzone';
 import { CanvasStage } from './components/CanvasStage/CanvasStage';
 import { ConfigPanel } from './components/ConfigPanel/ConfigPanel';
 import { runPipeline } from './core/pipeline';
+import { buildVoronoiSvg } from './core/svgExport';
 import { CanvasPixelSource } from './adapters/PixelSource';
-import { fractionToPx, RENDER_CONFIG } from './config/renderConfig';
+import { RENDER_CONFIG } from './config/renderConfig';
 import type { PipelineOutput, SeedStrategy } from './core/types';
 import './App.css';
 
@@ -14,23 +15,12 @@ interface ImageMeta {
   height: number;
 }
 
-function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
-  return `rgb(${color.r}, ${color.g}, ${color.b})`;
-}
-
-function colorToOpacity(color: PipelineOutput['cellColors'][number]): string {
-  return (color.a / 255).toString();
-}
-
 function baseName(fileName: string): string {
   return fileName.replace(/\.[^.]+$/, '');
 }
 
-function scaledPolygonPoints(
-  points: PipelineOutput['cellPolygons'][number],
-  scale: number
-): string {
-  return points.map((p) => `${p.x * scale},${p.y * scale}`).join(' ');
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }
 
 function App() {
@@ -53,6 +43,7 @@ function App() {
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copyCLIButtonLabel, setCopyCLIButtonLabel] = useState('Copy CLI Command');
   
   // Refs
   const canvasStageRef = useRef<HTMLDivElement>(null);
@@ -125,59 +116,13 @@ function App() {
     const canvasElement = canvasStageRef.current?.querySelector('canvas');
     const exportWidth = canvasElement?.clientWidth || pipelineOutput.imageWidth;
     const exportHeight = canvasElement?.clientHeight || pipelineOutput.imageHeight;
-    const scale = exportWidth / pipelineOutput.imageWidth;
-
-    const parts: string[] = [];
-    parts.push('<?xml version="1.0" encoding="UTF-8"?>');
-    parts.push(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${exportWidth} ${exportHeight}" width="${exportWidth}" height="${exportHeight}">`
-    );
-
-    parts.push('<g id="layer-cells">');
-    if (showCells) {
-      for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
-        const polygon = pipelineOutput.cellPolygons[i];
-        if (polygon.length === 0) continue;
-        parts.push(
-          `<polygon points="${scaledPolygonPoints(polygon, scale)}" fill="${colorToRgb(pipelineOutput.cellColors[i])}" fill-opacity="${colorToOpacity(pipelineOutput.cellColors[i])}" />`
-        );
-      }
-    }
-    parts.push('</g>');
-
-    parts.push('<g id="layer-edges">');
-    if (showVoronoi) {
-      const lineWidth = fractionToPx(
-        RENDER_CONFIG.voronoiLineWidthFraction,
-        pipelineOutput.imageWidth,
-        pipelineOutput.imageHeight
-      ) * scale;
-      for (const polygon of pipelineOutput.cellPolygons) {
-        if (polygon.length === 0) continue;
-        parts.push(
-          `<polygon points="${scaledPolygonPoints(polygon, scale)}" fill="none" stroke="${RENDER_CONFIG.voronoiLineColor}" stroke-width="${lineWidth}" />`
-        );
-      }
-    }
-    parts.push('</g>');
-
-    parts.push('<g id="layer-seeds">');
-    if (showSeeds) {
-      const radius = fractionToPx(
-        RENDER_CONFIG.seedPointRadiusFraction,
-        pipelineOutput.imageWidth,
-        pipelineOutput.imageHeight
-      ) * scale;
-      for (const point of pipelineOutput.seedsPx) {
-        parts.push(
-          `<circle cx="${point.x * scale}" cy="${point.y * scale}" r="${radius}" fill="${RENDER_CONFIG.seedPointColor}" />`
-        );
-      }
-    }
-    parts.push('</g>');
-
-    parts.push('</svg>');
-    const svgMarkup = parts.join('\n');
+    const svgMarkup = buildVoronoiSvg(pipelineOutput, {
+      width: exportWidth,
+      height: exportHeight,
+      showCells,
+      showVoronoi,
+      showSeeds,
+    });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -186,6 +131,30 @@ function App() {
     a.click();
     URL.revokeObjectURL(url);
   }, [pipelineOutput, showCells, showVoronoi, showSeeds, imageMeta]);
+
+  const handleCopyCLICommand = useCallback(async () => {
+    const command = [
+      'npm run cli --',
+      `--input ${shellQuote('/path/to/input-image.jpg')}`,
+      `--output ${shellQuote('/path/to/output.svg')}`,
+      `--seed-density ${seedDensity}`,
+      `--seed-value ${shellQuote(seedValue)}`,
+      `--seed-strategy ${seedStrategy}`,
+      `--show-cells ${showCells}`,
+      `--show-voronoi ${showVoronoi}`,
+      `--show-seeds ${showSeeds}`,
+      '--scale 1',
+    ].join(' ');
+
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopyCLIButtonLabel('Command Copied');
+      setTimeout(() => setCopyCLIButtonLabel('Copy CLI Command'), 1500);
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+      alert(`Copy failed. Command:\\n\\n${command}`);
+    }
+  }, [seedDensity, seedValue, seedStrategy, showCells, showVoronoi, showSeeds]);
   
   // Cleanup on unmount
   useEffect(() => {
@@ -251,6 +220,8 @@ function App() {
               onShowVoronoiChange={setShowVoronoi}
               onShowSeedsChange={setShowSeeds}
               onExportSVG={handleExportSVG}
+              onCopyCLICommand={handleCopyCLICommand}
+              copyCLIButtonLabel={copyCLIButtonLabel}
             />
           )}
         </aside>

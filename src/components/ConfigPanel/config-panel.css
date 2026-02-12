@@ -96,10 +96,15 @@
 }
 
 .config-panel__button--primary {
+  margin-top: 8px;
   width: 100%;
   background-color: #4CAF50;
   color: white;
   border-color: #4CAF50;
+}
+
+.config-panel__button--full {
+  width: 100%;
 }
 
 .config-panel__button--primary:hover {

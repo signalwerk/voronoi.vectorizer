@@ -39,6 +39,12 @@ Toggle these on/off to see different layers:
 
 ### 3. Export Your Creation
 Click **Export SVG** to download a vector SVG of the current Voronoi output.
+Click **Copy CLI Command** to copy equivalent Node CLI flags based on current GUI settings.
+
+### 4. Run from CLI (Sharp)
+```bash
+npm run cli -- --input ./image.jpg --output ./image.svg --seed-density 120 --seed-value my-seed --show-cells true --show-voronoi true --show-seeds false
+```
 
 ## 🎨 Tips for Best Results
 

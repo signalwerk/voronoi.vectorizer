@@ -16,6 +16,7 @@ A React + TypeScript application that transforms images into artistic Voronoi mo
 - **Deterministic Seed Generation** - Reproducible results using seeded PRNG
 - **Normalized Coordinate System** - Same aspect ratios produce same seed counts regardless of resolution
 - **Export SVG** - Save your creations as vector output
+- **Sharp CLI** - Run the same pipeline from Node and export SVG from files
 
 ## Architecture
 
@@ -75,6 +76,9 @@ npm install
 # Start development server
 npm run dev
 
+# Run CLI (named params)
+npm run cli -- --input ./in.jpg --output ./out.svg --seed-density 150 --seed-value abc --show-cells true --show-voronoi true --show-seeds false
+
 # Build for production
 npm run build
 
@@ -91,6 +95,7 @@ npm run preview
 5. **Choose Color Mode**: Switch between seed point color and cell average color
 6. **Adjust Performance**: Lower render scale for faster processing on large images
 7. **Export**: Click "Export SVG" to save your creation
+8. **Copy CLI Command**: Click "Copy CLI Command" to copy current GUI settings as CLI flags
 
 ## Technical Details
 

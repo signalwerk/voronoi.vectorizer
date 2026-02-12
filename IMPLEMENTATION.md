@@ -129,6 +129,13 @@ Tests verify:
 
 All tests passing.
 
+### 11. ✅ Node CLI (Sharp Adapter)
+- Added `npm run cli` entrypoint (`cli/index.ts`)
+- Uses `sharp` to read input image as raw RGBA pixel data
+- Runs the same core pipeline (`runPipeline`) used by browser
+- Exports layered SVG groups: cells, edges, seeds
+- Supports named CLI params for seed/config toggles and output path
+
 ## State Model
 
 Implemented:
