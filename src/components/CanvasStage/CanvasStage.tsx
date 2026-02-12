@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Canvas2DRenderer } from '../../adapters/Renderer';
 import { fractionToPx, RENDER_CONFIG } from '../../config/renderConfig';
+import { mergeCellsByColor } from '../../core/cellMerge';
 import { shouldRenderCell, toRenderedCellColor } from '../../core/cellRender';
 import type { PipelineOutput } from '../../core/types';
 import './canvas-stage.css';
@@ -14,7 +15,7 @@ interface CanvasStageProps {
   showSeeds: boolean;
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
-  combineSameColorCells?: boolean;
+  combineSameColorCells: boolean;
 }
 
 export function CanvasStage({
@@ -26,6 +27,7 @@ export function CanvasStage({
   showSeeds,
   blackAndWhiteCells,
   skipWhiteCells,
+  combineSameColorCells,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,8 +101,12 @@ export function CanvasStage({
         renderPolygons.push(scaledPolygons[i]);
         renderColors.push(renderedColor);
       }
-
-      rendererRef.current.drawCellFills(renderPolygons, renderColors);
+      if (combineSameColorCells) {
+        const mergedGroups = mergeCellsByColor(renderPolygons, renderColors);
+        rendererRef.current.drawMergedCellFills(mergedGroups);
+      } else {
+        rendererRef.current.drawCellFills(renderPolygons, renderColors);
+      }
     }
     
     // Layer 3: Voronoi edges (optional)
@@ -146,6 +152,7 @@ export function CanvasStage({
     showSeeds,
     blackAndWhiteCells,
     skipWhiteCells,
+    combineSameColorCells,
   ]);
   
   // Render when dependencies change

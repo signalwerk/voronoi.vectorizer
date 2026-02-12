@@ -219,6 +219,7 @@ function App() {
               showSeeds={showSeeds}
               blackAndWhiteCells={blackAndWhiteCells}
               skipWhiteCells={skipWhiteCells}
+              combineSameColorCells={combineSameColorCells}
             />
           )}
           

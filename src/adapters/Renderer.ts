@@ -21,6 +21,7 @@ export interface Renderer {
   clear(): void;
   drawOriginalImage?(image: HTMLImageElement, width: number, height: number): void;
   drawCellFills(polygons: PixelPoint[][], colors: CellColor[]): void;
+  drawMergedCellFills?(groups: { color: CellColor; rings: PixelPoint[][] }[]): void;
   drawVoronoiEdges(polygons: PixelPoint[][], style: DrawStyle): void;
   drawSeedPoints(points: PixelPoint[], style: DrawStyle): void;
 }
@@ -90,6 +91,27 @@ export class Canvas2DRenderer implements Renderer {
       }
       this.ctx.closePath();
       this.ctx.fill();
+    });
+  }
+
+  /**
+   * Draw merged cell fills (compound paths with possible holes)
+   */
+  drawMergedCellFills(groups: { color: CellColor; rings: PixelPoint[][] }[]): void {
+    groups.forEach((group) => {
+      this.ctx.fillStyle = `rgba(${group.color.r}, ${group.color.g}, ${group.color.b}, ${group.color.a / 255})`;
+      this.ctx.beginPath();
+
+      group.rings.forEach((ring) => {
+        if (ring.length === 0) return;
+        this.ctx.moveTo(ring[0].x, ring[0].y);
+        for (let i = 1; i < ring.length; i++) {
+          this.ctx.lineTo(ring[i].x, ring[i].y);
+        }
+        this.ctx.closePath();
+      });
+
+      this.ctx.fill('evenodd');
     });
   }
   
