@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Canvas2DRenderer } from '../../adapters/Renderer';
 import { fractionToPx, RENDER_CONFIG } from '../../config/renderConfig';
+import { shouldRenderCell, toRenderedCellColor } from '../../core/cellRender';
 import type { PipelineOutput } from '../../core/types';
 import './canvas-stage.css';
 
@@ -11,6 +12,8 @@ interface CanvasStageProps {
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
+  blackAndWhiteCells: boolean;
+  skipWhiteCells: boolean;
 }
 
 export function CanvasStage({
@@ -20,6 +23,8 @@ export function CanvasStage({
   showCells,
   showVoronoi,
   showSeeds,
+  blackAndWhiteCells,
+  skipWhiteCells,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -79,7 +84,22 @@ export function CanvasStage({
       polygon.map(p => ({ x: p.x * scale, y: p.y * scale }))
     );
     if (showCells) {
-      rendererRef.current.drawCellFills(scaledPolygons, pipelineOutput.cellColors);
+      const renderPolygons: PipelineOutput['cellPolygons'] = [];
+      const renderColors: PipelineOutput['cellColors'] = [];
+
+      for (let i = 0; i < scaledPolygons.length; i++) {
+        const renderedColor = toRenderedCellColor(
+          pipelineOutput.cellColors[i],
+          blackAndWhiteCells
+        );
+        if (!shouldRenderCell(renderedColor, { blackAndWhiteCells, skipWhiteCells })) {
+          continue;
+        }
+        renderPolygons.push(scaledPolygons[i]);
+        renderColors.push(renderedColor);
+      }
+
+      rendererRef.current.drawCellFills(renderPolygons, renderColors);
     }
     
     // Layer 3: Voronoi edges (optional)
@@ -116,7 +136,16 @@ export function CanvasStage({
     }
 
 
-  }, [image, pipelineOutput, showOriginal, showCells, showVoronoi, showSeeds]);
+  }, [
+    image,
+    pipelineOutput,
+    showOriginal,
+    showCells,
+    showVoronoi,
+    showSeeds,
+    blackAndWhiteCells,
+    skipWhiteCells,
+  ]);
   
   // Render when dependencies change
   useEffect(() => {

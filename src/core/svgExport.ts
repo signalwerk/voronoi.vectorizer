@@ -1,4 +1,5 @@
 import { fractionToPx, RENDER_CONFIG } from '../config/renderConfig';
+import { shouldRenderCell, toRenderedCellColor } from './cellRender';
 import type { PipelineOutput } from './types';
 
 export interface SvgExportOptions {
@@ -7,6 +8,8 @@ export interface SvgExportOptions {
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
+  blackAndWhiteCells: boolean;
+  skipWhiteCells: boolean;
 }
 
 function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
@@ -44,8 +47,13 @@ export function buildVoronoiSvg(
     for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
       const polygon = pipelineOutput.cellPolygons[i];
       if (polygon.length === 0) continue;
+      const renderedColor = toRenderedCellColor(
+        pipelineOutput.cellColors[i],
+        options.blackAndWhiteCells
+      );
+      if (!shouldRenderCell(renderedColor, options)) continue;
       parts.push(
-        `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(pipelineOutput.cellColors[i])}" fill-opacity="${colorToOpacity(pipelineOutput.cellColors[i])}" />`
+        `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(renderedColor)}" fill-opacity="${colorToOpacity(renderedColor)}" />`
       );
     }
   }

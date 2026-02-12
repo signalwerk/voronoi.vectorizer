@@ -16,6 +16,8 @@ interface CliOptions {
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
+  blackAndWhiteCells: boolean;
+  skipWhiteCells: boolean;
   scale: number;
 }
 
@@ -33,6 +35,8 @@ function usage(): string {
     '  --show-cells <bool>       true|false (default: true)',
     '  --show-voronoi <bool>     true|false (default: true)',
     '  --show-seeds <bool>       true|false (default: false)',
+    '  --black-and-white-cells <bool>  true|false (default: false)',
+    '  --skip-white-cells <bool>       true|false (default: false)',
     '  --scale <number>          Output scale factor (default: 1)',
     '  --help                    Show this help',
   ].join('\n');
@@ -62,6 +66,8 @@ function parseArgs(argv: string[]): CliOptions {
     showCells: true,
     showVoronoi: true,
     showSeeds: false,
+    blackAndWhiteCells: false,
+    skipWhiteCells: false,
     scale: 1,
   };
 
@@ -109,6 +115,12 @@ function parseArgs(argv: string[]): CliOptions {
         break;
       case '--show-seeds':
         options.showSeeds = toBool(value, '--show-seeds');
+        break;
+      case '--black-and-white-cells':
+        options.blackAndWhiteCells = toBool(value, '--black-and-white-cells');
+        break;
+      case '--skip-white-cells':
+        options.skipWhiteCells = toBool(value, '--skip-white-cells');
         break;
       case '--scale':
         options.scale = toNumber(value, '--scale');
@@ -173,6 +185,8 @@ async function main() {
     showCells: options.showCells,
     showVoronoi: options.showVoronoi,
     showSeeds: options.showSeeds,
+    blackAndWhiteCells: options.blackAndWhiteCells,
+    skipWhiteCells: options.skipWhiteCells,
   });
   await fs.writeFile(outPath, svg, 'utf8');
 

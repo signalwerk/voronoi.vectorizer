@@ -38,6 +38,8 @@ function App() {
   const [showCells, setShowCells] = useState(true);
   const [showVoronoi, setShowVoronoi] = useState(true);
   const [showSeeds, setShowSeeds] = useState(false);
+  const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(false);
+  const [skipWhiteCells, setSkipWhiteCells] = useState(false);
   
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
@@ -122,6 +124,8 @@ function App() {
       showCells,
       showVoronoi,
       showSeeds,
+      blackAndWhiteCells,
+      skipWhiteCells,
     });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -130,7 +134,15 @@ function App() {
     a.download = `${baseName(imageMeta?.name ?? 'voronoi')}-${Date.now()}.svg`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [pipelineOutput, showCells, showVoronoi, showSeeds, imageMeta]);
+  }, [
+    pipelineOutput,
+    showCells,
+    showVoronoi,
+    showSeeds,
+    blackAndWhiteCells,
+    skipWhiteCells,
+    imageMeta,
+  ]);
 
   const handleCopyCLICommand = useCallback(async () => {
     const command = [
@@ -143,6 +155,8 @@ function App() {
       `--show-cells ${showCells}`,
       `--show-voronoi ${showVoronoi}`,
       `--show-seeds ${showSeeds}`,
+      `--black-and-white-cells ${blackAndWhiteCells}`,
+      `--skip-white-cells ${skipWhiteCells}`,
       '--scale 1',
     ].join(' ');
 
@@ -154,7 +168,16 @@ function App() {
       console.error('Clipboard copy failed:', err);
       alert(`Copy failed. Command:\\n\\n${command}`);
     }
-  }, [seedDensity, seedValue, seedStrategy, showCells, showVoronoi, showSeeds]);
+  }, [
+    seedDensity,
+    seedValue,
+    seedStrategy,
+    showCells,
+    showVoronoi,
+    showSeeds,
+    blackAndWhiteCells,
+    skipWhiteCells,
+  ]);
   
   // Cleanup on unmount
   useEffect(() => {
@@ -186,6 +209,8 @@ function App() {
               showCells={showCells}
               showVoronoi={showVoronoi}
               showSeeds={showSeeds}
+              blackAndWhiteCells={blackAndWhiteCells}
+              skipWhiteCells={skipWhiteCells}
             />
           )}
           
@@ -212,6 +237,8 @@ function App() {
               showCells={showCells}
               showVoronoi={showVoronoi}
               showSeeds={showSeeds}
+              blackAndWhiteCells={blackAndWhiteCells}
+              skipWhiteCells={skipWhiteCells}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -219,6 +246,8 @@ function App() {
               onShowCellsChange={setShowCells}
               onShowVoronoiChange={setShowVoronoi}
               onShowSeedsChange={setShowSeeds}
+              onBlackAndWhiteCellsChange={setBlackAndWhiteCells}
+              onSkipWhiteCellsChange={setSkipWhiteCells}
               onExportSVG={handleExportSVG}
               onCopyCLICommand={handleCopyCLICommand}
               copyCLIButtonLabel={copyCLIButtonLabel}

@@ -17,6 +17,8 @@ interface ConfigPanelProps {
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
+  blackAndWhiteCells: boolean;
+  skipWhiteCells: boolean;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -24,6 +26,8 @@ interface ConfigPanelProps {
   onShowCellsChange: (value: boolean) => void;
   onShowVoronoiChange: (value: boolean) => void;
   onShowSeedsChange: (value: boolean) => void;
+  onBlackAndWhiteCellsChange: (value: boolean) => void;
+  onSkipWhiteCellsChange: (value: boolean) => void;
   onExportSVG: () => void;
   onCopyCLICommand: () => void;
   copyCLIButtonLabel?: string;
@@ -37,6 +41,8 @@ export function ConfigPanel({
   showCells,
   showVoronoi,
   showSeeds,
+  blackAndWhiteCells,
+  skipWhiteCells,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -44,6 +50,8 @@ export function ConfigPanel({
   onShowCellsChange,
   onShowVoronoiChange,
   onShowSeedsChange,
+  onBlackAndWhiteCellsChange,
+  onSkipWhiteCellsChange,
   onExportSVG,
   onCopyCLICommand,
   copyCLIButtonLabel = 'Copy CLI Command',
@@ -176,6 +184,34 @@ export function ConfigPanel({
             id="seeds"
             checked={showSeeds}
             onCheckedChange={onShowSeedsChange}
+          >
+            <Switch.Thumb className="switch__thumb" />
+          </Switch.Root>
+        </div>
+
+        <div className="config-panel__toggle">
+          <Label.Root className="config-panel__toggle-label" htmlFor="bw-cells">
+            Cells Black & White
+          </Label.Root>
+          <Switch.Root
+            className="switch"
+            id="bw-cells"
+            checked={blackAndWhiteCells}
+            onCheckedChange={onBlackAndWhiteCellsChange}
+          >
+            <Switch.Thumb className="switch__thumb" />
+          </Switch.Root>
+        </div>
+
+        <div className="config-panel__toggle">
+          <Label.Root className="config-panel__toggle-label" htmlFor="skip-white">
+            Skip White Cells
+          </Label.Root>
+          <Switch.Root
+            className="switch"
+            id="skip-white"
+            checked={skipWhiteCells}
+            onCheckedChange={onSkipWhiteCellsChange}
           >
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
