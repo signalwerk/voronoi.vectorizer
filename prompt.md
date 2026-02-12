@@ -1,3 +1,5 @@
+here is a quite rough explanation to build a react app, that i will later give to an agentig coding agent. (AI). please refine and structure the requirements and make it so that the agent then brings a greate state of the art app alive. please also make sure that the whole image processing pipeline is functional. we will later not only use the functions in the browser but will also make it for node. therefore for now make it in the browser but all funcitonal, so that we can easily later replace the calls for the canvas with an other interface. here the notes to refine:
+
 create a react app with a vite setup. 
 
 we want a image-processing app. the workflow is as follows:
