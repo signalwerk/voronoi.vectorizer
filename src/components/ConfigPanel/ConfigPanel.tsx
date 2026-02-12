@@ -87,7 +87,7 @@ export function ConfigPanel({
             className="slider"
             id="density"
             min={10}
-            max={500}
+            max={100_000}
             step={10}
             value={[seedDensity]}
             onValueChange={([value]) => onSeedDensityChange(value)}

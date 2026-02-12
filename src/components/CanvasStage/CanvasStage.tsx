@@ -66,11 +66,7 @@ export function CanvasStage({
     
     // Clear canvas
     rendererRef.current.clear();
-    
-    // Layer 1: Original image (optional)
-    if (showOriginal) {
-      rendererRef.current.drawOriginalImage(image, displayWidth, displayHeight);
-    }
+
     
     // Layer 2: Filled Voronoi cells
     const scaledPolygons = pipelineOutput.cellPolygons.map(polygon =>
@@ -109,6 +105,13 @@ export function CanvasStage({
         pointColor: RENDER_CONFIG.seedPointColor,
         pointRadius: radius,
       });
+    }
+
+
+        
+    // Layer 5: Original image (optional)
+    if (showOriginal) {
+      rendererRef.current.drawOriginalImage(image, displayWidth, displayHeight);
     }
   }, [image, pipelineOutput, showOriginal, showVoronoi, showSeeds]);
   
