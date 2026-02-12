@@ -38,7 +38,7 @@ Toggle these on/off to see different layers:
 - **Show Seed Points**: Display red dots at seed locations
 
 ### 3. Export Your Creation
-Click **Export PNG** to download the current canvas as a PNG file.
+Click **Export SVG** to download a vector SVG of the current Voronoi output.
 
 ## 🎨 Tips for Best Results
 

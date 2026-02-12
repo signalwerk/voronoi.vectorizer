@@ -15,7 +15,7 @@ A React + TypeScript application that transforms images into artistic Voronoi mo
   - Show/hide seed points
 - **Deterministic Seed Generation** - Reproducible results using seeded PRNG
 - **Normalized Coordinate System** - Same aspect ratios produce same seed counts regardless of resolution
-- **Export PNG** - Save your creations
+- **Export SVG** - Save your creations as vector output
 
 ## Architecture
 
@@ -90,7 +90,7 @@ npm run preview
 4. **Toggle Display Options**: Show/hide original image, edges, and seed points
 5. **Choose Color Mode**: Switch between seed point color and cell average color
 6. **Adjust Performance**: Lower render scale for faster processing on large images
-7. **Export**: Click "Export PNG" to save your creation
+7. **Export**: Click "Export SVG" to save your creation
 
 ## Technical Details
 
@@ -171,7 +171,7 @@ No Bootstrap or utility classes. Each component has its own dedicated CSS file.
 
 - [ ] Node.js CLI version for batch processing
 - [ ] Additional seed distribution strategies (Poisson disk, jittered grid)
-- [ ] SVG export option
+- [x] SVG export option
 - [ ] Custom color palettes
 - [ ] Animation/morphing between configurations
 - [ ] WebGL renderer for performance

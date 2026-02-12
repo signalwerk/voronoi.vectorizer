@@ -24,7 +24,7 @@ interface ConfigPanelProps {
   onShowCellsChange: (value: boolean) => void;
   onShowVoronoiChange: (value: boolean) => void;
   onShowSeedsChange: (value: boolean) => void;
-  onExportPNG: () => void;
+  onExportSVG: () => void;
 }
 
 export function ConfigPanel({
@@ -42,7 +42,7 @@ export function ConfigPanel({
   onShowCellsChange,
   onShowVoronoiChange,
   onShowSeedsChange,
-  onExportPNG,
+  onExportSVG,
 }: ConfigPanelProps) {
   return (
     <div className="config-panel">
@@ -183,9 +183,9 @@ export function ConfigPanel({
         <div className="config-panel__section">
           <button
             className="config-panel__button config-panel__button--primary"
-            onClick={onExportPNG}
+            onClick={onExportSVG}
           >
-            Export PNG
+            Export SVG
           </button>
         </div>
       )}

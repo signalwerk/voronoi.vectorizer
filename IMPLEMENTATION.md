@@ -56,7 +56,7 @@ Implemented in `ConfigPanel` component:
 - ✅ Show Voronoi edges toggle
 - ✅ Show seed points toggle
 - ✅ Image metadata display (filename, resolution, aspect)
-- ✅ Export PNG button
+- ✅ Export SVG button
 
 ### 6. ✅ Global Render Config Variables
 
@@ -111,9 +111,9 @@ All CSS follows BEM naming:
 
 No Bootstrap. No utility classes.
 
-### 9. ✅ Export PNG
-- Implemented in `App.tsx` via `handleExportPNG()`
-- Exports canvas as PNG blob
+### 9. ✅ Export SVG
+- Implemented in `App.tsx` via `handleExportSVG()`
+- Exports Voronoi geometry as SVG vector data
 - Downloads with timestamp filename
 
 ### 10. ✅ Tests for Core Functions

@@ -4,7 +4,7 @@ import { CanvasStage } from './components/CanvasStage/CanvasStage';
 import { ConfigPanel } from './components/ConfigPanel/ConfigPanel';
 import { runPipeline } from './core/pipeline';
 import { CanvasPixelSource } from './adapters/PixelSource';
-import { RENDER_CONFIG } from './config/renderConfig';
+import { fractionToPx, RENDER_CONFIG } from './config/renderConfig';
 import type { PipelineOutput, SeedStrategy } from './core/types';
 import './App.css';
 
@@ -12,6 +12,25 @@ interface ImageMeta {
   name: string;
   width: number;
   height: number;
+}
+
+function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
+  return `rgb(${color.r}, ${color.g}, ${color.b})`;
+}
+
+function colorToOpacity(color: PipelineOutput['cellColors'][number]): string {
+  return (color.a / 255).toString();
+}
+
+function baseName(fileName: string): string {
+  return fileName.replace(/\.[^.]+$/, '');
+}
+
+function scaledPolygonPoints(
+  points: PipelineOutput['cellPolygons'][number],
+  scale: number
+): string {
+  return points.map((p) => `${p.x * scale},${p.y * scale}`).join(' ');
 }
 
 function App() {
@@ -96,28 +115,77 @@ function App() {
     setSeedValue(Math.random().toString(36).substring(2, 15));
   }, []);
   
-  // Export PNG
-  const handleExportPNG = useCallback(() => {
-    const canvasElement = canvasStageRef.current?.querySelector('canvas');
-    if (!canvasElement) {
-      alert('No canvas to export');
+  // Export SVG
+  const handleExportSVG = useCallback(() => {
+    if (!pipelineOutput) {
+      alert('No Voronoi data to export');
       return;
     }
-    
-    canvasElement.toBlob((blob) => {
-      if (!blob) {
-        alert('Failed to create image');
-        return;
+
+    const canvasElement = canvasStageRef.current?.querySelector('canvas');
+    const exportWidth = canvasElement?.clientWidth || pipelineOutput.imageWidth;
+    const exportHeight = canvasElement?.clientHeight || pipelineOutput.imageHeight;
+    const scale = exportWidth / pipelineOutput.imageWidth;
+
+    const parts: string[] = [];
+    parts.push('<?xml version="1.0" encoding="UTF-8"?>');
+    parts.push(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${exportWidth} ${exportHeight}" width="${exportWidth}" height="${exportHeight}">`
+    );
+
+    parts.push('<g id="layer-cells">');
+    if (showCells) {
+      for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
+        const polygon = pipelineOutput.cellPolygons[i];
+        if (polygon.length === 0) continue;
+        parts.push(
+          `<polygon points="${scaledPolygonPoints(polygon, scale)}" fill="${colorToRgb(pipelineOutput.cellColors[i])}" fill-opacity="${colorToOpacity(pipelineOutput.cellColors[i])}" />`
+        );
       }
-      
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `voronoi-${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  }, []);
+    }
+    parts.push('</g>');
+
+    parts.push('<g id="layer-edges">');
+    if (showVoronoi) {
+      const lineWidth = fractionToPx(
+        RENDER_CONFIG.voronoiLineWidthFraction,
+        pipelineOutput.imageWidth,
+        pipelineOutput.imageHeight
+      ) * scale;
+      for (const polygon of pipelineOutput.cellPolygons) {
+        if (polygon.length === 0) continue;
+        parts.push(
+          `<polygon points="${scaledPolygonPoints(polygon, scale)}" fill="none" stroke="${RENDER_CONFIG.voronoiLineColor}" stroke-width="${lineWidth}" />`
+        );
+      }
+    }
+    parts.push('</g>');
+
+    parts.push('<g id="layer-seeds">');
+    if (showSeeds) {
+      const radius = fractionToPx(
+        RENDER_CONFIG.seedPointRadiusFraction,
+        pipelineOutput.imageWidth,
+        pipelineOutput.imageHeight
+      ) * scale;
+      for (const point of pipelineOutput.seedsPx) {
+        parts.push(
+          `<circle cx="${point.x * scale}" cy="${point.y * scale}" r="${radius}" fill="${RENDER_CONFIG.seedPointColor}" />`
+        );
+      }
+    }
+    parts.push('</g>');
+
+    parts.push('</svg>');
+    const svgMarkup = parts.join('\n');
+    const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${baseName(imageMeta?.name ?? 'voronoi')}-${Date.now()}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [pipelineOutput, showCells, showVoronoi, showSeeds, imageMeta]);
   
   // Cleanup on unmount
   useEffect(() => {
@@ -182,7 +250,7 @@ function App() {
               onShowCellsChange={setShowCells}
               onShowVoronoiChange={setShowVoronoi}
               onShowSeedsChange={setShowSeeds}
-              onExportPNG={handleExportPNG}
+              onExportSVG={handleExportSVG}
             />
           )}
         </aside>
