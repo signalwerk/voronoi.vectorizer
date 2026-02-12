@@ -19,6 +19,7 @@ interface ConfigPanelProps {
   showSeeds: boolean;
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
+  combineSameColorCells: boolean;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -28,6 +29,7 @@ interface ConfigPanelProps {
   onShowSeedsChange: (value: boolean) => void;
   onBlackAndWhiteCellsChange: (value: boolean) => void;
   onSkipWhiteCellsChange: (value: boolean) => void;
+  onCombineSameColorCellsChange: (value: boolean) => void;
   onExportSVG: () => void;
   onCopyCLICommand: () => void;
   copyCLIButtonLabel?: string;
@@ -43,6 +45,7 @@ export function ConfigPanel({
   showSeeds,
   blackAndWhiteCells,
   skipWhiteCells,
+  combineSameColorCells,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -52,6 +55,7 @@ export function ConfigPanel({
   onShowSeedsChange,
   onBlackAndWhiteCellsChange,
   onSkipWhiteCellsChange,
+  onCombineSameColorCellsChange,
   onExportSVG,
   onCopyCLICommand,
   copyCLIButtonLabel = 'Copy CLI Command',
@@ -212,6 +216,20 @@ export function ConfigPanel({
             id="skip-white"
             checked={skipWhiteCells}
             onCheckedChange={onSkipWhiteCellsChange}
+          >
+            <Switch.Thumb className="switch__thumb" />
+          </Switch.Root>
+        </div>
+
+        <div className="config-panel__toggle">
+          <Label.Root className="config-panel__toggle-label" htmlFor="combine-color-cells">
+            Combine Same Color Cells
+          </Label.Root>
+          <Switch.Root
+            className="switch"
+            id="combine-color-cells"
+            checked={combineSameColorCells}
+            onCheckedChange={onCombineSameColorCellsChange}
           >
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>

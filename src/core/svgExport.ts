@@ -1,3 +1,4 @@
+import { mergeCellsByColor } from './cellMerge';
 import { fractionToPx, RENDER_CONFIG } from '../config/renderConfig';
 import { shouldRenderCell, toRenderedCellColor } from './cellRender';
 import type { PipelineOutput } from './types';
@@ -10,6 +11,7 @@ export interface SvgExportOptions {
   showSeeds: boolean;
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
+  combineSameColorCells: boolean;
 }
 
 function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
@@ -28,6 +30,19 @@ function scaledPolygonPoints(
   return points.map((p) => `${p.x * scaleX},${p.y * scaleY}`).join(' ');
 }
 
+function ringsToPathData(rings: PipelineOutput['cellPolygons'], scaleX: number, scaleY: number): string {
+  return rings
+    .map((ring) => {
+      if (ring.length === 0) return '';
+      const head = ring[0];
+      const tail = ring.slice(1);
+      const segments = tail.map((point) => `L ${point.x * scaleX} ${point.y * scaleY}`).join(' ');
+      return `M ${head.x * scaleX} ${head.y * scaleY} ${segments} Z`;
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 export function buildVoronoiSvg(
   pipelineOutput: PipelineOutput,
   options: SvgExportOptions
@@ -42,19 +57,37 @@ export function buildVoronoiSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${options.width} ${options.height}" width="${options.width}" height="${options.height}">`
   );
 
+  const renderPolygons: PipelineOutput['cellPolygons'] = [];
+  const renderColors: PipelineOutput['cellColors'] = [];
+  for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
+    const renderedColor = toRenderedCellColor(
+      pipelineOutput.cellColors[i],
+      options.blackAndWhiteCells
+    );
+    if (!shouldRenderCell(renderedColor, options)) continue;
+    renderPolygons.push(pipelineOutput.cellPolygons[i]);
+    renderColors.push(renderedColor);
+  }
+
   parts.push('<g id="layer-cells">');
   if (options.showCells) {
-    for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
-      const polygon = pipelineOutput.cellPolygons[i];
-      if (polygon.length === 0) continue;
-      const renderedColor = toRenderedCellColor(
-        pipelineOutput.cellColors[i],
-        options.blackAndWhiteCells
-      );
-      if (!shouldRenderCell(renderedColor, options)) continue;
-      parts.push(
-        `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(renderedColor)}" fill-opacity="${colorToOpacity(renderedColor)}" />`
-      );
+    if (options.combineSameColorCells) {
+      const merged = mergeCellsByColor(renderPolygons, renderColors);
+      for (const group of merged) {
+        const d = ringsToPathData(group.rings, scaleX, scaleY);
+        if (!d) continue;
+        parts.push(
+          `<path d="${d}" fill="${colorToRgb(group.color)}" fill-opacity="${colorToOpacity(group.color)}" fill-rule="evenodd" />`
+        );
+      }
+    } else {
+      for (let i = 0; i < renderPolygons.length; i++) {
+        const polygon = renderPolygons[i];
+        if (polygon.length === 0) continue;
+        parts.push(
+          `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(renderColors[i])}" fill-opacity="${colorToOpacity(renderColors[i])}" />`
+        );
+      }
     }
   }
   parts.push('</g>');

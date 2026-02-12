@@ -18,6 +18,7 @@ interface CliOptions {
   showSeeds: boolean;
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
+  combineSameColorCells: boolean;
   scale: number;
 }
 
@@ -37,6 +38,7 @@ function usage(): string {
     '  --show-seeds <bool>       true|false (default: false)',
     '  --black-and-white-cells <bool>  true|false (default: false)',
     '  --skip-white-cells <bool>       true|false (default: false)',
+    '  --combine-same-color-cells <bool> true|false (default: false)',
     '  --scale <number>          Output scale factor (default: 1)',
     '  --help                    Show this help',
   ].join('\n');
@@ -68,6 +70,7 @@ function parseArgs(argv: string[]): CliOptions {
     showSeeds: false,
     blackAndWhiteCells: false,
     skipWhiteCells: false,
+    combineSameColorCells: false,
     scale: 1,
   };
 
@@ -121,6 +124,9 @@ function parseArgs(argv: string[]): CliOptions {
         break;
       case '--skip-white-cells':
         options.skipWhiteCells = toBool(value, '--skip-white-cells');
+        break;
+      case '--combine-same-color-cells':
+        options.combineSameColorCells = toBool(value, '--combine-same-color-cells');
         break;
       case '--scale':
         options.scale = toNumber(value, '--scale');
@@ -187,6 +193,7 @@ async function main() {
     showSeeds: options.showSeeds,
     blackAndWhiteCells: options.blackAndWhiteCells,
     skipWhiteCells: options.skipWhiteCells,
+    combineSameColorCells: options.combineSameColorCells,
   });
   await fs.writeFile(outPath, svg, 'utf8');
 

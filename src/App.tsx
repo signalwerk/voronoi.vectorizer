@@ -40,6 +40,7 @@ function App() {
   const [showSeeds, setShowSeeds] = useState(false);
   const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(false);
   const [skipWhiteCells, setSkipWhiteCells] = useState(false);
+  const [combineSameColorCells, setCombineSameColorCells] = useState(false);
   
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
@@ -126,6 +127,7 @@ function App() {
       showSeeds,
       blackAndWhiteCells,
       skipWhiteCells,
+      combineSameColorCells,
     });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -141,6 +143,7 @@ function App() {
     showSeeds,
     blackAndWhiteCells,
     skipWhiteCells,
+    combineSameColorCells,
     imageMeta,
   ]);
 
@@ -157,8 +160,12 @@ function App() {
       `--show-seeds ${showSeeds}`,
       `--black-and-white-cells ${blackAndWhiteCells}`,
       `--skip-white-cells ${skipWhiteCells}`,
+      `--combine-same-color-cells ${combineSameColorCells}`,
       '--scale 1',
-    ].join(' ');
+    ]
+    // indent from the second line onwards
+    .map((line, index) => (index === 0 ? line : '    ' + line)  )
+    .join(' \\\n');
 
     try {
       await navigator.clipboard.writeText(command);
@@ -177,6 +184,7 @@ function App() {
     showSeeds,
     blackAndWhiteCells,
     skipWhiteCells,
+    combineSameColorCells,
   ]);
   
   // Cleanup on unmount
@@ -239,6 +247,7 @@ function App() {
               showSeeds={showSeeds}
               blackAndWhiteCells={blackAndWhiteCells}
               skipWhiteCells={skipWhiteCells}
+              combineSameColorCells={combineSameColorCells}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -248,6 +257,7 @@ function App() {
               onShowSeedsChange={setShowSeeds}
               onBlackAndWhiteCellsChange={setBlackAndWhiteCells}
               onSkipWhiteCellsChange={setSkipWhiteCells}
+              onCombineSameColorCellsChange={setCombineSameColorCells}
               onExportSVG={handleExportSVG}
               onCopyCLICommand={handleCopyCLICommand}
               copyCLIButtonLabel={copyCLIButtonLabel}

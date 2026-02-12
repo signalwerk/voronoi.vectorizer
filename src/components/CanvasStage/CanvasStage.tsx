@@ -14,6 +14,7 @@ interface CanvasStageProps {
   showSeeds: boolean;
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
+  combineSameColorCells?: boolean;
 }
 
 export function CanvasStage({
