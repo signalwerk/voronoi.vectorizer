@@ -23,11 +23,10 @@ function App() {
   const [seedDensity, setSeedDensity] = useState(RENDER_CONFIG.defaultSeedDensity);
   const [seedValue, setSeedValue] = useState(RENDER_CONFIG.defaultSeedValue);
   const [seedStrategy] = useState<SeedStrategy>('aspect');
-  const [colorMode, setColorMode] = useState<'cellAverage' | 'seedPoint'>('seedPoint');
-  const [renderScale, setRenderScale] = useState(RENDER_CONFIG.defaultRenderScale);
   
   // Display toggles
   const [showOriginal, setShowOriginal] = useState(false);
+  const [showCells, setShowCells] = useState(true);
   const [showVoronoi, setShowVoronoi] = useState(true);
   const [showSeeds, setShowSeeds] = useState(false);
   
@@ -77,8 +76,7 @@ function App() {
             seedDensity,
             seedValue,
             seedStrategy,
-            colorMode,
-            renderScale: colorMode === 'cellAverage' ? renderScale : 1.0,
+            colorMode: 'seedPoint',
           },
           pixelSourceRef.current!
         );
@@ -91,7 +89,7 @@ function App() {
         setIsProcessing(false);
       }
     });
-  }, [image, imageMeta, seedDensity, seedValue, seedStrategy, colorMode, renderScale]);
+  }, [image, imageMeta, seedDensity, seedValue, seedStrategy]);
   
   // Randomize seed
   const handleRandomizeSeed = useCallback(() => {
@@ -148,6 +146,7 @@ function App() {
               image={image}
               pipelineOutput={pipelineOutput}
               showOriginal={showOriginal}
+              showCells={showCells}
               showVoronoi={showVoronoi}
               showSeeds={showSeeds}
             />
@@ -173,18 +172,16 @@ function App() {
               seedDensity={seedDensity}
               seedValue={seedValue}
               showOriginal={showOriginal}
+              showCells={showCells}
               showVoronoi={showVoronoi}
               showSeeds={showSeeds}
-              colorMode={colorMode}
-              renderScale={renderScale}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
               onShowOriginalChange={setShowOriginal}
+              onShowCellsChange={setShowCells}
               onShowVoronoiChange={setShowVoronoi}
               onShowSeedsChange={setShowSeeds}
-              onColorModeChange={setColorMode}
-              onRenderScaleChange={setRenderScale}
               onExportPNG={handleExportPNG}
             />
           )}

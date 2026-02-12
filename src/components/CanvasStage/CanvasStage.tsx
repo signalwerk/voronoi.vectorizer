@@ -8,6 +8,7 @@ interface CanvasStageProps {
   image: HTMLImageElement | null;
   pipelineOutput: PipelineOutput | null;
   showOriginal: boolean;
+  showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
 }
@@ -16,6 +17,7 @@ export function CanvasStage({
   image,
   pipelineOutput,
   showOriginal,
+  showCells,
   showVoronoi,
   showSeeds,
 }: CanvasStageProps) {
@@ -66,13 +68,19 @@ export function CanvasStage({
     
     // Clear canvas
     rendererRef.current.clear();
-
     
-    // Layer 2: Filled Voronoi cells
+    // Layer 1: Original image (optional)
+    if (showOriginal) {
+      rendererRef.current.drawOriginalImage(image, displayWidth, displayHeight);
+    }
+
+    // Layer 2: Filled Voronoi cells (optional)
     const scaledPolygons = pipelineOutput.cellPolygons.map(polygon =>
       polygon.map(p => ({ x: p.x * scale, y: p.y * scale }))
     );
-    rendererRef.current.drawCellFills(scaledPolygons, pipelineOutput.cellColors);
+    if (showCells) {
+      rendererRef.current.drawCellFills(scaledPolygons, pipelineOutput.cellColors);
+    }
     
     // Layer 3: Voronoi edges (optional)
     if (showVoronoi) {
@@ -108,12 +116,7 @@ export function CanvasStage({
     }
 
 
-        
-    // Layer 5: Original image (optional)
-    if (showOriginal) {
-      rendererRef.current.drawOriginalImage(image, displayWidth, displayHeight);
-    }
-  }, [image, pipelineOutput, showOriginal, showVoronoi, showSeeds]);
+  }, [image, pipelineOutput, showOriginal, showCells, showVoronoi, showSeeds]);
   
   // Render when dependencies change
   useEffect(() => {

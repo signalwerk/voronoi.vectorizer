@@ -8,16 +8,13 @@ A React + TypeScript application that transforms images into artistic Voronoi mo
 
 - **Drag & Drop Image Upload** - Easy image loading with visual feedback
 - **Voronoi Tessellation** - Generate beautiful geometric patterns from seed points
-- **Two Color Sampling Modes**:
-  - **Seed Point Color**: Sample color directly at seed locations
-  - **Cell Average Color**: Average color across entire Voronoi cells
+- **Seed Point Color Sampling** - Sample colors directly at seed locations for fast, vibrant results
 - **Interactive Toggles**:
   - Show/hide original image overlay
   - Show/hide Voronoi edges
   - Show/hide seed points
 - **Deterministic Seed Generation** - Reproducible results using seeded PRNG
 - **Normalized Coordinate System** - Same aspect ratios produce same seed counts regardless of resolution
-- **Performance Controls** - Adjustable render scale for large images
 - **Export PNG** - Save your creations
 
 ## Architecture
@@ -115,25 +112,13 @@ This means:
 - Wide images (16:9) get ~1.78× more seeds than tall images (9:16)
 - Optional `maxAspect` strategy makes portrait/landscape symmetric
 
-### Color Sampling Modes
+### Color Sampling
 
-**Seed Point Color** (Fast):
+**Seed Point Color**:
 - Samples one pixel at each seed location
 - Nearest-neighbor interpolation
-- Instant results
-
-**Cell Average Color** (Accurate):
-- Computes average of all pixels in each Voronoi cell
-- Uses `delaunay.find()` for efficient nearest-site queries
-- Optional downsampling for performance
-- O(pixels) time complexity
-
-### Performance Optimization
-
-For large images with cell average mode:
-- Render scale setting downsamples pixel processing
-- Example: 0.5x scale = process 1/4 of pixels
-- Results are visually similar with much faster computation
+- Fast and deterministic
+- Creates vibrant, high-contrast results
 
 ## Tech Stack
 

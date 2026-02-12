@@ -14,7 +14,6 @@ export const RENDER_CONFIG = {
   // Default UI values
   defaultSeedDensity: 100,
   defaultSeedValue: '12345',
-  defaultRenderScale: 1.0,
 };
 
 /**

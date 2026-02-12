@@ -4,7 +4,7 @@
  */
 import { computeSeedCount, generateSeeds, seedsToPixels } from './seedGeneration';
 import { buildVoronoi } from './voronoi';
-import { sampleSeedColors, computeCellAverageColors } from './colorSampling';
+import { sampleSeedColors } from './colorSampling';
 import type { PipelineInput, PipelineOutput } from './types';
 import type { ImageDataLike } from './colorSampling';
 
@@ -43,23 +43,15 @@ export function runPipeline(
   const seedsPx = seedsToPixels(seeds01, input.imageWidth, input.imageHeight);
   
   // 4. Build Voronoi diagram
-  const { delaunay, cellPolygons } = buildVoronoi(
+  const { cellPolygons } = buildVoronoi(
     seedsPx,
     input.imageWidth,
     input.imageHeight
   );
   
-  // 5. Sample colors based on mode
+  // 5. Sample colors at seed points
   const imageData = pixelSource.getImageData();
-  let cellColors;
-  
-  if (input.colorMode === 'seedPoint') {
-    cellColors = sampleSeedColors(imageData, seedsPx);
-  } else {
-    // cellAverage mode
-    const scale = input.renderScale ?? 1.0;
-    cellColors = computeCellAverageColors(imageData, delaunay, scale);
-  }
+  const cellColors = sampleSeedColors(imageData, seedsPx);
   
   // 6. Return complete output
   return {

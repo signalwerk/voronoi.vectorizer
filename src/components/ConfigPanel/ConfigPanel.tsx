@@ -14,18 +14,16 @@ interface ConfigPanelProps {
   seedDensity: number;
   seedValue: string;
   showOriginal: boolean;
+  showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
-  colorMode: 'cellAverage' | 'seedPoint';
-  renderScale: number;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
   onShowOriginalChange: (value: boolean) => void;
+  onShowCellsChange: (value: boolean) => void;
   onShowVoronoiChange: (value: boolean) => void;
   onShowSeedsChange: (value: boolean) => void;
-  onColorModeChange: (value: 'cellAverage' | 'seedPoint') => void;
-  onRenderScaleChange: (value: number) => void;
   onExportPNG: () => void;
 }
 
@@ -34,18 +32,16 @@ export function ConfigPanel({
   seedDensity,
   seedValue,
   showOriginal,
+  showCells,
   showVoronoi,
   showSeeds,
-  colorMode,
-  renderScale,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
   onShowOriginalChange,
+  onShowCellsChange,
   onShowVoronoiChange,
   onShowSeedsChange,
-  onColorModeChange,
-  onRenderScaleChange,
   onExportPNG,
 }: ConfigPanelProps) {
   return (
@@ -140,6 +136,20 @@ export function ConfigPanel({
         </div>
         
         <div className="config-panel__toggle">
+          <Label.Root className="config-panel__toggle-label" htmlFor="cells">
+            Show Filled Cells
+          </Label.Root>
+          <Switch.Root
+            className="switch"
+            id="cells"
+            checked={showCells}
+            onCheckedChange={onShowCellsChange}
+          >
+            <Switch.Thumb className="switch__thumb" />
+          </Switch.Root>
+        </div>
+        
+        <div className="config-panel__toggle">
           <Label.Root className="config-panel__toggle-label" htmlFor="edges">
             Show Voronoi Edges
           </Label.Root>
@@ -165,60 +175,6 @@ export function ConfigPanel({
           >
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
-        </div>
-      </div>
-      
-      {/* Color Mode */}
-      <div className="config-panel__section">
-        <h3 className="config-panel__title">Color Mode</h3>
-        
-        <div className="config-panel__radio-group">
-          <label className="config-panel__radio">
-            <input
-              type="radio"
-              name="colorMode"
-              value="seedPoint"
-              checked={colorMode === 'seedPoint'}
-              onChange={() => onColorModeChange('seedPoint')}
-            />
-            <span>Seed Point Color</span>
-          </label>
-          
-          <label className="config-panel__radio">
-            <input
-              type="radio"
-              name="colorMode"
-              value="cellAverage"
-              checked={colorMode === 'cellAverage'}
-              onChange={() => onColorModeChange('cellAverage')}
-            />
-            <span>Cell Average Color</span>
-          </label>
-        </div>
-      </div>
-      
-      {/* Performance */}
-      <div className="config-panel__section">
-        <h3 className="config-panel__title">Performance</h3>
-        
-        <div className="config-panel__control">
-          <Label.Root className="config-panel__label" htmlFor="scale">
-            Render Scale: {renderScale}x
-          </Label.Root>
-          <Slider.Root
-            className="slider"
-            id="scale"
-            min={0.25}
-            max={1}
-            step={0.25}
-            value={[renderScale]}
-            onValueChange={([value]) => onRenderScaleChange(value)}
-          >
-            <Slider.Track className="slider__track">
-              <Slider.Range className="slider__range" />
-            </Slider.Track>
-            <Slider.Thumb className="slider__thumb" />
-          </Slider.Root>
         </div>
       </div>
       

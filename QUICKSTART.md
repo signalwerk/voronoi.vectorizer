@@ -37,35 +37,25 @@ Toggle these on/off to see different layers:
 - **Show Voronoi Edges**: Draw cell boundaries
 - **Show Seed Points**: Display red dots at seed locations
 
-#### **Color Mode**
-- **Seed Point Color**: Fast - samples color at each seed location
-- **Cell Average Color**: Accurate - averages all pixels in each cell
-
-#### **Performance**
-- **Render Scale (0.25x - 1x)**: For cell average mode on large images
-  - 1x = full resolution (slow but accurate)
-  - 0.5x = half resolution (4x faster, similar quality)
-  - 0.25x = quarter resolution (16x faster, rougher)
-
 ### 3. Export Your Creation
 Click **Export PNG** to download the current canvas as a PNG file.
 
 ## 🎨 Tips for Best Results
 
 ### For Photos
-- Use **Cell Average Color** mode for smooth color transitions
 - Try density 100-300 for portrait-style effect
 - Enable **Show Voronoi Edges** for geometric emphasis
+- Experiment with different seed values for variation
 
 ### For Abstract Art
-- Use **Seed Point Color** for sharper, more vibrant results
 - Try low density (10-50) for bold geometric shapes
 - Disable edges for a cleaner look
+- Use high density (300-500) for intricate patterns
 
-### For Performance
+### For Best Workflow
 - Start with low density while experimenting
-- Use **Seed Point Color** for instant feedback
-- Lower **Render Scale** when using Cell Average on large images
+- Adjust density to find your preferred level of detail
+- Use the Randomize button to quickly explore variations
 
 ## 🧪 Test the Seed Calculation
 

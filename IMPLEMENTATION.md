@@ -45,12 +45,7 @@ All deliverables from the specification have been successfully implemented.
 - `sampleSeedColors()` in `core/colorSampling.ts`
 - Nearest-neighbor sampling at seed locations
 - Fast, deterministic
-
-#### Color Sampling - Cell Average Mode
-- `computeCellAverageColors()` in `core/colorSampling.ts`
-- Efficient O(pixels) implementation using `delaunay.find()`
-- Correct pixel membership per cell
-- Optional downsampling via `renderScale`
+- Creates vibrant, high-contrast results
 
 ### 5. ✅ UI Panel with All Required Controls
 
@@ -60,9 +55,8 @@ Implemented in `ConfigPanel` component:
 - ✅ Show original image toggle (Radix UI Switch)
 - ✅ Show Voronoi edges toggle
 - ✅ Show seed points toggle
-- ✅ Color mode radio buttons (seed point / cell average)
-- ✅ Render scale slider (0.25x - 1x)
 - ✅ Image metadata display (filename, resolution, aspect)
+- ✅ Export PNG button
 
 ### 6. ✅ Global Render Config Variables
 
@@ -137,7 +131,7 @@ All tests passing.
 
 ## State Model
 
-Implemented as specified:
+Implemented:
 ```typescript
 {
   image: HTMLImageElement | null
@@ -145,8 +139,6 @@ Implemented as specified:
   seedDensity: number
   seedValue: string
   seedStrategy: 'aspect' | 'maxAspect'
-  colorMode: 'cellAverage' | 'seedPoint'
-  renderScale: number
   showOriginal: boolean
   showVoronoi: boolean
   showSeeds: boolean
@@ -155,6 +147,8 @@ Implemented as specified:
   error: string | null
 }
 ```
+
+Color mode is fixed to 'seedPoint' for simplicity and performance.
 
 ## Rendering Pipeline
 
@@ -170,9 +164,9 @@ All layers independently toggleable.
 
 - Single `getImageData()` call per pipeline run (cached)
 - `requestAnimationFrame()` for responsive drawing
-- Optional downsampling via `renderScale` for cell average mode
-- Efficient `delaunay.find()` for pixel membership queries
-- Processing indicator during heavy computation
+- Fast seed point color sampling (nearest-neighbor)
+- Processing indicator during computation
+- Immediate results even for large images
 
 ## Code Quality
 
