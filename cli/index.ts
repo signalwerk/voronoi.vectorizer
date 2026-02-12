@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { runPipeline, type PixelSource } from '../src/core/pipeline';
+import { BufferPixelSource } from '../src/adapters/PixelSource';
+import { runPipeline } from '../src/core/pipeline';
 import { buildVoronoiSvg } from '../src/core/svgExport';
 import type { SeedStrategy } from '../src/core/types';
 import { RENDER_CONFIG } from '../src/config/renderConfig';
@@ -16,26 +17,6 @@ interface CliOptions {
   showVoronoi: boolean;
   showSeeds: boolean;
   scale: number;
-}
-
-class SharpPixelSource implements PixelSource {
-  width: number;
-  height: number;
-  private readonly imageData: Uint8ClampedArray;
-
-  constructor(width: number, height: number, data: Uint8ClampedArray) {
-    this.width = width;
-    this.height = height;
-    this.imageData = data;
-  }
-
-  getImageData() {
-    return {
-      width: this.width,
-      height: this.height,
-      data: this.imageData,
-    };
-  }
 }
 
 function usage(): string {
@@ -167,7 +148,7 @@ async function main() {
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  const pixelSource = new SharpPixelSource(
+  const pixelSource = new BufferPixelSource(
     raw.info.width,
     raw.info.height,
     new Uint8ClampedArray(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength)

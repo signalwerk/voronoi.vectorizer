@@ -63,3 +63,26 @@ export class CanvasPixelSource implements PixelSource {
     this.canvas.height = 0;
   }
 }
+
+/**
+ * Node/buffer implementation for CLI usage
+ */
+export class BufferPixelSource implements PixelSource {
+  public readonly width: number;
+  public readonly height: number;
+  private readonly data: Uint8ClampedArray;
+
+  constructor(width: number, height: number, data: Uint8ClampedArray) {
+    this.width = width;
+    this.height = height;
+    this.data = data;
+  }
+
+  getImageData(): ImageDataLike {
+    return {
+      width: this.width,
+      height: this.height,
+      data: this.data,
+    };
+  }
+}
