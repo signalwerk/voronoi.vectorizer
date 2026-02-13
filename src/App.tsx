@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Dropzone } from './components/Dropzone/Dropzone';
 import { CanvasStage } from './components/CanvasStage/CanvasStage';
 import { ConfigPanel } from './components/ConfigPanel/ConfigPanel';
@@ -6,6 +6,9 @@ import { runPipeline } from './core/pipeline';
 import { buildVoronoiSvg } from './core/svgExport';
 import { CanvasPixelSource } from './adapters/PixelSource';
 import { RENDER_CONFIG } from './config/renderConfig';
+import { mergeCellsByColor } from './core/cellMerge';
+import { shouldRenderCell, toRenderedCellColor } from './core/cellRender';
+import { simplifyMergedBoundaries } from './core/simplify';
 import type { PathSimplificationAlgorithm, PipelineOutput, SeedStrategy } from './core/types';
 import './App.css';
 
@@ -36,14 +39,16 @@ function App() {
   // Display toggles
   const [showOriginal, setShowOriginal] = useState(false);
   const [showCells, setShowCells] = useState(true);
-  const [showVoronoi, setShowVoronoi] = useState(true);
+  const [showVoronoi, setShowVoronoi] = useState(false);
   const [showSeeds, setShowSeeds] = useState(false);
-  const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(false);
-  const [skipWhiteCells, setSkipWhiteCells] = useState(false);
+  const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(true);
+  const [skipWhiteCells, setSkipWhiteCells] = useState(true);
   const [combineSameColorCells, setCombineSameColorCells] = useState(false);
   const [pathSimplificationAlgorithm, setPathSimplificationAlgorithm] =
-    useState<PathSimplificationAlgorithm>('rdp');
+    useState<PathSimplificationAlgorithm>('none');
   const [pathSimplificationStrength, setPathSimplificationStrength] = useState(0);
+  const [pathSimplificationSizeCompensation, setPathSimplificationSizeCompensation] =
+    useState(false);
   
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
@@ -133,6 +138,7 @@ function App() {
       combineSameColorCells,
       pathSimplificationAlgorithm,
       pathSimplificationStrength,
+      pathSimplificationSizeCompensation,
     });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -151,6 +157,7 @@ function App() {
     combineSameColorCells,
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
+    pathSimplificationSizeCompensation,
     imageMeta,
   ]);
 
@@ -170,6 +177,7 @@ function App() {
       `--combine-same-color-cells ${combineSameColorCells}`,
       `--path-simplification-algorithm ${pathSimplificationAlgorithm}`,
       `--path-simplification-strength ${pathSimplificationStrength}`,
+      `--path-simplification-size-compensation ${pathSimplificationSizeCompensation}`,
       '--scale 1',
     ]
     // indent from the second line onwards
@@ -196,6 +204,54 @@ function App() {
     combineSameColorCells,
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
+    pathSimplificationSizeCompensation,
+  ]);
+
+  const simplificationStats = useMemo(() => {
+    if (!pipelineOutput) return null;
+    if (!combineSameColorCells) return null;
+    if (pathSimplificationAlgorithm === 'none') return null;
+
+    const renderPolygons: PipelineOutput['cellPolygons'] = [];
+    const renderColors: PipelineOutput['cellColors'] = [];
+
+    for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
+      const renderedColor = toRenderedCellColor(
+        pipelineOutput.cellColors[i],
+        blackAndWhiteCells
+      );
+      if (!shouldRenderCell(renderedColor, { blackAndWhiteCells, skipWhiteCells })) {
+        continue;
+      }
+      renderPolygons.push(pipelineOutput.cellPolygons[i]);
+      renderColors.push(renderedColor);
+    }
+
+    const merged = mergeCellsByColor(renderPolygons, renderColors);
+    const simplified = simplifyMergedBoundaries(merged, {
+      algorithm: pathSimplificationAlgorithm,
+      strength: pathSimplificationStrength,
+      sizeCompensation: pathSimplificationSizeCompensation,
+    });
+
+    const originalPoints = merged.reduce(
+      (sum, group) => sum + group.rings.reduce((ringSum, ring) => ringSum + ring.length, 0),
+      0
+    );
+    const optimizedPoints = simplified.reduce(
+      (sum, group) => sum + group.rings.reduce((ringSum, ring) => ringSum + ring.length, 0),
+      0
+    );
+
+    return { originalPoints, optimizedPoints };
+  }, [
+    pipelineOutput,
+    combineSameColorCells,
+    pathSimplificationAlgorithm,
+    pathSimplificationStrength,
+    pathSimplificationSizeCompensation,
+    blackAndWhiteCells,
+    skipWhiteCells,
   ]);
   
   // Cleanup on unmount
@@ -233,6 +289,7 @@ function App() {
               combineSameColorCells={combineSameColorCells}
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
+              pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
             />
           )}
           
@@ -264,6 +321,7 @@ function App() {
               combineSameColorCells={combineSameColorCells}
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
+              pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -276,6 +334,9 @@ function App() {
               onCombineSameColorCellsChange={setCombineSameColorCells}
               onPathSimplificationAlgorithmChange={setPathSimplificationAlgorithm}
               onPathSimplificationStrengthChange={setPathSimplificationStrength}
+              onPathSimplificationSizeCompensationChange={setPathSimplificationSizeCompensation}
+              simplificationOriginalPoints={simplificationStats?.originalPoints ?? null}
+              simplificationOptimizedPoints={simplificationStats?.optimizedPoints ?? null}
               onExportSVG={handleExportSVG}
               onCopyCLICommand={handleCopyCLICommand}
               copyCLIButtonLabel={copyCLIButtonLabel}

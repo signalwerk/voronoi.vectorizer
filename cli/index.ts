@@ -21,6 +21,7 @@ interface CliOptions {
   combineSameColorCells: boolean;
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
+  pathSimplificationSizeCompensation: boolean;
   scale: number;
 }
 
@@ -41,8 +42,9 @@ function usage(): string {
     '  --black-and-white-cells <bool>  true|false (default: false)',
     '  --skip-white-cells <bool>       true|false (default: false)',
     '  --combine-same-color-cells <bool> true|false (default: false)',
-    '  --path-simplification-algorithm <name> rdp|vw|rw (default: rdp)',
+    '  --path-simplification-algorithm <name> none|rdp|vw|rw (default: none)',
     '  --path-simplification-strength <number> 0..1 (default: 0)',
+    '  --path-simplification-size-compensation <bool> true|false (default: false)',
     '  --scale <number>          Output scale factor (default: 1)',
     '  --help                    Show this help',
   ].join('\n');
@@ -75,8 +77,9 @@ function parseArgs(argv: string[]): CliOptions {
     blackAndWhiteCells: false,
     skipWhiteCells: false,
     combineSameColorCells: false,
-    pathSimplificationAlgorithm: 'rdp',
+    pathSimplificationAlgorithm: 'none',
     pathSimplificationStrength: 0,
+    pathSimplificationSizeCompensation: false,
     scale: 1,
   };
 
@@ -135,13 +138,19 @@ function parseArgs(argv: string[]): CliOptions {
         options.combineSameColorCells = toBool(value, '--combine-same-color-cells');
         break;
       case '--path-simplification-algorithm':
-        if (value !== 'rdp' && value !== 'vw' && value !== 'rw') {
+        if (value !== 'none' && value !== 'rdp' && value !== 'vw' && value !== 'rw') {
           throw new Error(`Invalid --path-simplification-algorithm: ${value}`);
         }
         options.pathSimplificationAlgorithm = value;
         break;
       case '--path-simplification-strength':
         options.pathSimplificationStrength = toNumber(value, '--path-simplification-strength');
+        break;
+      case '--path-simplification-size-compensation':
+        options.pathSimplificationSizeCompensation = toBool(
+          value,
+          '--path-simplification-size-compensation'
+        );
         break;
       case '--scale':
         options.scale = toNumber(value, '--scale');
@@ -215,6 +224,7 @@ async function main() {
     combineSameColorCells: options.combineSameColorCells,
     pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
     pathSimplificationStrength: options.pathSimplificationStrength,
+    pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
   });
   await fs.writeFile(outPath, svg, 'utf8');
 

@@ -15,6 +15,7 @@ export interface SvgExportOptions {
   combineSameColorCells: boolean;
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
+  pathSimplificationSizeCompensation: boolean;
 }
 
 function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
@@ -79,6 +80,7 @@ export function buildVoronoiSvg(
       const simplified = simplifyMergedBoundaries(merged, {
         algorithm: options.pathSimplificationAlgorithm,
         strength: options.pathSimplificationStrength,
+        sizeCompensation: options.pathSimplificationSizeCompensation,
       });
       for (const group of simplified) {
         const d = ringsToPathData(group.rings, scaleX, scaleY);

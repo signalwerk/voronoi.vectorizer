@@ -19,6 +19,7 @@ interface CanvasStageProps {
   combineSameColorCells: boolean;
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
+  pathSimplificationSizeCompensation: boolean;
 }
 
 export function CanvasStage({
@@ -33,6 +34,7 @@ export function CanvasStage({
   combineSameColorCells,
   pathSimplificationAlgorithm,
   pathSimplificationStrength,
+  pathSimplificationSizeCompensation,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,6 +113,7 @@ export function CanvasStage({
         const simplifiedGroups = simplifyMergedBoundaries(mergedGroups, {
           algorithm: pathSimplificationAlgorithm,
           strength: pathSimplificationStrength,
+          sizeCompensation: pathSimplificationSizeCompensation,
         });
         rendererRef.current.drawMergedCellFills(simplifiedGroups);
       } else {
@@ -164,6 +167,7 @@ export function CanvasStage({
     combineSameColorCells,
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
+    pathSimplificationSizeCompensation,
   ]);
   
   // Render when dependencies change

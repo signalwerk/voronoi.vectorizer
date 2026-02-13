@@ -23,6 +23,7 @@ interface ConfigPanelProps {
   combineSameColorCells: boolean;
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
+  pathSimplificationSizeCompensation: boolean;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -35,6 +36,9 @@ interface ConfigPanelProps {
   onCombineSameColorCellsChange: (value: boolean) => void;
   onPathSimplificationAlgorithmChange: (value: PathSimplificationAlgorithm) => void;
   onPathSimplificationStrengthChange: (value: number) => void;
+  onPathSimplificationSizeCompensationChange: (value: boolean) => void;
+  simplificationOriginalPoints?: number | null;
+  simplificationOptimizedPoints?: number | null;
   onExportSVG: () => void;
   onCopyCLICommand: () => void;
   copyCLIButtonLabel?: string;
@@ -53,6 +57,7 @@ export function ConfigPanel({
   combineSameColorCells,
   pathSimplificationAlgorithm,
   pathSimplificationStrength,
+  pathSimplificationSizeCompensation,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -65,6 +70,9 @@ export function ConfigPanel({
   onCombineSameColorCellsChange,
   onPathSimplificationAlgorithmChange,
   onPathSimplificationStrengthChange,
+  onPathSimplificationSizeCompensationChange,
+  simplificationOriginalPoints = null,
+  simplificationOptimizedPoints = null,
   onExportSVG,
   onCopyCLICommand,
   copyCLIButtonLabel = 'Copy CLI Command',
@@ -258,6 +266,7 @@ export function ConfigPanel({
                   onPathSimplificationAlgorithmChange(e.target.value as PathSimplificationAlgorithm)
                 }
               >
+                <option value="none">No Simplification</option>
                 <option value="rdp">Ramer-Douglas-Peucker (RDP)</option>
                 <option value="vw">Visvalingam-Whyatt (VW)</option>
                 <option value="rw">Reumann-Witkam (RW)</option>
@@ -283,6 +292,39 @@ export function ConfigPanel({
                 <Slider.Thumb className="slider__thumb" />
               </Slider.Root>
             </div>
+
+            <div className="config-panel__toggle">
+              <Label.Root className="config-panel__toggle-label" htmlFor="size-comp">
+                Simplification Size Compensation
+              </Label.Root>
+              <Switch.Root
+                className="switch"
+                id="size-comp"
+                checked={pathSimplificationSizeCompensation}
+                onCheckedChange={onPathSimplificationSizeCompensationChange}
+              >
+                <Switch.Thumb className="switch__thumb" />
+              </Switch.Root>
+            </div>
+
+            {pathSimplificationAlgorithm !== 'none' &&
+              simplificationOriginalPoints !== null &&
+              simplificationOptimizedPoints !== null && (
+                <div className="config-panel__info">
+                  <div className="config-panel__info-row">
+                    <span className="config-panel__info-label">Original Points:</span>
+                    <span className="config-panel__info-value">
+                      {simplificationOriginalPoints}
+                    </span>
+                  </div>
+                  <div className="config-panel__info-row">
+                    <span className="config-panel__info-label">Optimized Points:</span>
+                    <span className="config-panel__info-value">
+                      {simplificationOptimizedPoints}
+                    </span>
+                  </div>
+                </div>
+              )}
           </>
         )}
       </div>
