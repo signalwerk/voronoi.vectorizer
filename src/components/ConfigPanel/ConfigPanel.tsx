@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import * as Switch from '@radix-ui/react-switch';
 import * as Label from '@radix-ui/react-label';
 import * as Slider from '@radix-ui/react-slider';
@@ -81,6 +82,41 @@ export function ConfigPanel({
   onCopyCLICommand,
   copyCLIButtonLabel = 'Copy CLI Command',
 }: ConfigPanelProps) {
+  type EditableField = 'density' | 'simplify-strength' | 'min-path-size';
+  const [editingField, setEditingField] = useState<EditableField | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+
+  const startEditing = (field: EditableField, value: number) => {
+    setEditingField(field);
+    setEditingValue(String(value));
+  };
+
+  const cancelEditing = () => {
+    setEditingField(null);
+    setEditingValue('');
+  };
+
+  const commitEditing = () => {
+    const parsed = Number(editingValue);
+    if (!Number.isFinite(parsed) || !editingField) {
+      cancelEditing();
+      return;
+    }
+
+    if (editingField === 'density') {
+      const clamped = Math.max(10, Math.min(100_000, Math.round(parsed / 10) * 10));
+      onSeedDensityChange(clamped);
+    } else if (editingField === 'simplify-strength') {
+      const clamped = Math.max(0, Math.min(1, parsed));
+      onPathSimplificationStrengthChange(clamped);
+    } else if (editingField === 'min-path-size') {
+      const clamped = Math.max(0, Math.min(1, parsed));
+      onPathSimplificationMinPathSize01Change(clamped);
+    }
+
+    cancelEditing();
+  };
+
   return (
     <div className="config-panel">
       {/* Image Info */}
@@ -113,9 +149,27 @@ export function ConfigPanel({
         <h3 className="config-panel__title">Seed Configuration</h3>
         
         <div className="config-panel__control">
-          <Label.Root className="config-panel__label" htmlFor="density">
-            Seed Density: {seedDensity}
-          </Label.Root>
+          {editingField === 'density' ? (
+            <input
+              className="config-panel__inline-input"
+              autoFocus
+              value={editingValue}
+              onChange={(e) => setEditingValue(e.target.value)}
+              onBlur={commitEditing}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitEditing();
+                if (e.key === 'Escape') cancelEditing();
+              }}
+            />
+          ) : (
+            <Label.Root
+              className="config-panel__label"
+              htmlFor="density"
+              onDoubleClick={() => startEditing('density', seedDensity)}
+            >
+              Seed Density: {seedDensity}
+            </Label.Root>
+          )}
           <Slider.Root
             className="slider"
             id="density"
@@ -278,9 +332,29 @@ export function ConfigPanel({
             </div>
 
             <div className="config-panel__control">
-              <Label.Root className="config-panel__label" htmlFor="simplify-strength">
-                Simplification Strength: {pathSimplificationStrength.toFixed(2)}
-              </Label.Root>
+              {editingField === 'simplify-strength' ? (
+                <input
+                  className="config-panel__inline-input"
+                  autoFocus
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onBlur={commitEditing}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitEditing();
+                    if (e.key === 'Escape') cancelEditing();
+                  }}
+                />
+              ) : (
+                <Label.Root
+                  className="config-panel__label"
+                  htmlFor="simplify-strength"
+                  onDoubleClick={() =>
+                    startEditing('simplify-strength', pathSimplificationStrength)
+                  }
+                >
+                  Simplification Strength: {pathSimplificationStrength.toFixed(2)}
+                </Label.Root>
+              )}
               <Slider.Root
                 className="slider"
                 id="simplify-strength"
@@ -312,9 +386,29 @@ export function ConfigPanel({
             </div>
 
             <div className="config-panel__control">
-              <Label.Root className="config-panel__label" htmlFor="min-path-size">
-                Min Path Size Filter (0-1): {pathSimplificationMinPathSize01.toFixed(3)}
-              </Label.Root>
+              {editingField === 'min-path-size' ? (
+                <input
+                  className="config-panel__inline-input"
+                  autoFocus
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onBlur={commitEditing}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitEditing();
+                    if (e.key === 'Escape') cancelEditing();
+                  }}
+                />
+              ) : (
+                <Label.Root
+                  className="config-panel__label"
+                  htmlFor="min-path-size"
+                  onDoubleClick={() =>
+                    startEditing('min-path-size', pathSimplificationMinPathSize01)
+                  }
+                >
+                  Min Path Size Filter (0-1): {pathSimplificationMinPathSize01.toFixed(3)}
+                </Label.Root>
+              )}
               <Slider.Root
                 className="slider"
                 id="min-path-size"

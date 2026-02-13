@@ -1,7 +1,5 @@
-import { mergeCellsByColor } from './cellMerge';
+import { computeCellRenderPipeline } from './cellRenderPipeline';
 import { fractionToPx, RENDER_CONFIG } from '../config/renderConfig';
-import { shouldRenderCell, toRenderedCellColor } from './cellRender';
-import { simplifyMergedBoundaries } from './simplify';
 import type { PathSimplificationAlgorithm, PipelineOutput } from './types';
 
 export interface SvgExportOptions {
@@ -62,31 +60,20 @@ export function buildVoronoiSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${options.width} ${options.height}" width="${options.width}" height="${options.height}">`
   );
 
-  const renderPolygons: PipelineOutput['cellPolygons'] = [];
-  const renderColors: PipelineOutput['cellColors'] = [];
-  for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
-    const renderedColor = toRenderedCellColor(
-      pipelineOutput.cellColors[i],
-      options.blackAndWhiteCells
-    );
-    if (!shouldRenderCell(renderedColor, options)) continue;
-    renderPolygons.push(pipelineOutput.cellPolygons[i]);
-    renderColors.push(renderedColor);
-  }
+  const cellRender = computeCellRenderPipeline(pipelineOutput, {
+    blackAndWhiteCells: options.blackAndWhiteCells,
+    skipWhiteCells: options.skipWhiteCells,
+    combineSameColorCells: options.combineSameColorCells,
+    pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
+    pathSimplificationStrength: options.pathSimplificationStrength,
+    pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
+  });
 
   parts.push('<g id="layer-cells">');
   if (options.showCells) {
     if (options.combineSameColorCells) {
-      const merged = mergeCellsByColor(renderPolygons, renderColors);
-      const simplified = simplifyMergedBoundaries(merged, {
-        algorithm: options.pathSimplificationAlgorithm,
-        strength: options.pathSimplificationStrength,
-        sizeCompensation: options.pathSimplificationSizeCompensation,
-        minPathSize:
-          Math.max(0, Math.min(1, options.pathSimplificationMinPathSize01)) *
-          Math.min(pipelineOutput.imageWidth, pipelineOutput.imageHeight),
-      });
-      for (const group of simplified) {
+      for (const group of cellRender.mergedOptimized ?? []) {
         const d = ringsToPathData(group.rings, scaleX, scaleY);
         if (!d) continue;
         parts.push(
@@ -94,11 +81,11 @@ export function buildVoronoiSvg(
         );
       }
     } else {
-      for (let i = 0; i < renderPolygons.length; i++) {
-        const polygon = renderPolygons[i];
+      for (let i = 0; i < cellRender.polygons.length; i++) {
+        const polygon = cellRender.polygons[i];
         if (polygon.length === 0) continue;
         parts.push(
-          `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(renderColors[i])}" fill-opacity="${colorToOpacity(renderColors[i])}" />`
+          `<polygon points="${scaledPolygonPoints(polygon, scaleX, scaleY)}" fill="${colorToRgb(cellRender.colors[i])}" fill-opacity="${colorToOpacity(cellRender.colors[i])}" />`
         );
       }
     }

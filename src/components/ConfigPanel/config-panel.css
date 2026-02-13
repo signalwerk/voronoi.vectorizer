@@ -75,6 +75,20 @@
   border-color: #666;
 }
 
+.config-panel__inline-input {
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.config-panel__inline-input:focus {
+  outline: none;
+  border-color: #666;
+}
+
 .config-panel__select {
   width: 100%;
   padding: 8px 12px;

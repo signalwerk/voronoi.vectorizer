@@ -1,9 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Canvas2DRenderer } from '../../adapters/Renderer';
 import { fractionToPx, RENDER_CONFIG } from '../../config/renderConfig';
-import { mergeCellsByColor } from '../../core/cellMerge';
-import { shouldRenderCell, toRenderedCellColor } from '../../core/cellRender';
-import { simplifyMergedBoundaries } from '../../core/simplify';
+import { computeCellRenderPipeline } from '../../core/cellRenderPipeline';
 import type { PathSimplificationAlgorithm, PipelineOutput } from '../../core/types';
 import './canvas-stage.css';
 
@@ -92,38 +90,32 @@ export function CanvasStage({
     }
 
     // Layer 2: Filled Voronoi cells (optional)
-    const scaledPolygons = pipelineOutput.cellPolygons.map(polygon =>
-      polygon.map(p => ({ x: p.x * scale, y: p.y * scale }))
+    const scaledPolygons = pipelineOutput.cellPolygons.map((polygon) =>
+      polygon.map((p) => ({ x: p.x * scale, y: p.y * scale }))
     );
     if (showCells) {
-      const renderPolygons: PipelineOutput['cellPolygons'] = [];
-      const renderColors: PipelineOutput['cellColors'] = [];
-
-      for (let i = 0; i < scaledPolygons.length; i++) {
-        const renderedColor = toRenderedCellColor(
-          pipelineOutput.cellColors[i],
-          blackAndWhiteCells
-        );
-        if (!shouldRenderCell(renderedColor, { blackAndWhiteCells, skipWhiteCells })) {
-          continue;
-        }
-        renderPolygons.push(scaledPolygons[i]);
-        renderColors.push(renderedColor);
-      }
+      const cellRender = computeCellRenderPipeline(pipelineOutput, {
+        blackAndWhiteCells,
+        skipWhiteCells,
+        combineSameColorCells,
+        pathSimplificationAlgorithm,
+        pathSimplificationStrength,
+        pathSimplificationSizeCompensation,
+        pathSimplificationMinPathSize01,
+      });
       if (combineSameColorCells) {
-        const mergedGroups = mergeCellsByColor(renderPolygons, renderColors);
-        const simplifiedGroups = simplifyMergedBoundaries(mergedGroups, {
-          algorithm: pathSimplificationAlgorithm,
-          strength: pathSimplificationStrength,
-          sizeCompensation: pathSimplificationSizeCompensation,
-          minPathSize:
-            Math.max(0, Math.min(1, pathSimplificationMinPathSize01)) *
-            Math.min(image.naturalWidth, image.naturalHeight) *
-            scale,
-        });
-        rendererRef.current.drawMergedCellFills(simplifiedGroups);
+        const scaledMergedGroups = (cellRender.mergedOptimized ?? []).map((group) => ({
+          color: group.color,
+          rings: group.rings.map((ring) =>
+            ring.map((point) => ({ x: point.x * scale, y: point.y * scale }))
+          ),
+        }));
+        rendererRef.current.drawMergedCellFills(scaledMergedGroups);
       } else {
-        rendererRef.current.drawCellFills(renderPolygons, renderColors);
+        const scaledRenderPolygons = cellRender.polygons.map((polygon) =>
+          polygon.map((point) => ({ x: point.x * scale, y: point.y * scale }))
+        );
+        rendererRef.current.drawCellFills(scaledRenderPolygons, cellRender.colors);
       }
     }
     

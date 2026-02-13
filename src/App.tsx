@@ -46,7 +46,7 @@ function App() {
     useState<PathSimplificationAlgorithm>('none');
   const [pathSimplificationStrength, setPathSimplificationStrength] = useState(0);
   const [pathSimplificationSizeCompensation, setPathSimplificationSizeCompensation] =
-    useState(false);
+    useState(true);
   const [pathSimplificationMinPathSize01, setPathSimplificationMinPathSize01] = useState(0);
   
   // Pipeline state
@@ -123,9 +123,8 @@ function App() {
       return;
     }
 
-    const canvasElement = canvasStageRef.current?.querySelector('canvas');
-    const exportWidth = canvasElement?.clientWidth || pipelineOutput.imageWidth;
-    const exportHeight = canvasElement?.clientHeight || pipelineOutput.imageHeight;
+    const exportWidth = pipelineOutput.imageWidth;
+    const exportHeight = pipelineOutput.imageHeight;
     const svgMarkup = buildVoronoiSvg(pipelineOutput, {
       width: exportWidth,
       height: exportHeight,
