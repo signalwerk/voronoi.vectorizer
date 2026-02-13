@@ -19,7 +19,13 @@ export interface DrawStyle {
 export interface Renderer {
   setViewportSize(cssWidth: number, cssHeight: number): void;
   clear(): void;
-  drawOriginalImage?(image: HTMLImageElement, width: number, height: number): void;
+  drawOriginalImage?(
+    image: HTMLImageElement,
+    width: number,
+    height: number,
+    x?: number,
+    y?: number
+  ): void;
   drawCellFills(polygons: PixelPoint[][], colors: CellColor[]): void;
   drawMergedCellFills?(groups: { color: CellColor; rings: PixelPoint[][] }[]): void;
   drawVoronoiEdges(polygons: PixelPoint[][], style: DrawStyle): void;
@@ -70,8 +76,14 @@ export class Canvas2DRenderer implements Renderer {
   /**
    * Draw the original image
    */
-  drawOriginalImage(image: HTMLImageElement, width: number, height: number): void {
-    this.ctx.drawImage(image, 0, 0, width, height);
+  drawOriginalImage(
+    image: HTMLImageElement,
+    width: number,
+    height: number,
+    x: number = 0,
+    y: number = 0
+  ): void {
+    this.ctx.drawImage(image, x, y, width, height);
   }
   
   /**
