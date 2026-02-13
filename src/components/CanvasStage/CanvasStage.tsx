@@ -20,6 +20,7 @@ interface CanvasStageProps {
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
+  pathSimplificationMinPathSize01: number;
 }
 
 export function CanvasStage({
@@ -35,6 +36,7 @@ export function CanvasStage({
   pathSimplificationAlgorithm,
   pathSimplificationStrength,
   pathSimplificationSizeCompensation,
+  pathSimplificationMinPathSize01,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -114,6 +116,10 @@ export function CanvasStage({
           algorithm: pathSimplificationAlgorithm,
           strength: pathSimplificationStrength,
           sizeCompensation: pathSimplificationSizeCompensation,
+          minPathSize:
+            Math.max(0, Math.min(1, pathSimplificationMinPathSize01)) *
+            Math.min(image.naturalWidth, image.naturalHeight) *
+            scale,
         });
         rendererRef.current.drawMergedCellFills(simplifiedGroups);
       } else {
@@ -168,6 +174,7 @@ export function CanvasStage({
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01,
   ]);
   
   // Render when dependencies change

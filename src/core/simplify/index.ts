@@ -8,6 +8,7 @@ export interface PathSimplificationOptions {
   algorithm: PathSimplificationAlgorithm;
   strength: number; // expected [0, 1]
   sizeCompensation: boolean;
+  minPathSize: number; // absolute size threshold in current coordinate space
 }
 
 function clamp01(value: number): number {
@@ -43,9 +44,11 @@ function simplifyRing(
     return [...ring];
   }
 
+  const algorithmStrengthMultiplier = algorithm === 'vw' ? 4 : 1;
+  const tunedStrength = strength * algorithmStrengthMultiplier;
   const scale = ringScale(ring);
-  const rawEpsilon = scale * strength * 0.05;
-  const rawAreaThreshold = Math.pow(scale * strength * 0.02, 2);
+  const rawEpsilon = scale * tunedStrength * 0.05;
+  const rawAreaThreshold = Math.pow(scale * tunedStrength * 0.02, 2);
   const compensation = sizeCompensation ? referenceScale / scale : 1;
   const epsilon = rawEpsilon * compensation;
   const areaThreshold = rawAreaThreshold * compensation * compensation;
@@ -64,32 +67,59 @@ function simplifyRing(
   }
 }
 
+function ringMaxDimension(ring: PixelPoint[]): number {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const point of ring) {
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
+  }
+
+  return Math.max(maxX - minX, maxY - minY);
+}
+
 export function simplifyMergedBoundaries(
   groups: MergedColorBoundaries[],
   options: PathSimplificationOptions
 ): MergedColorBoundaries[] {
   const strength = clamp01(options.strength);
-  if (strength <= 0 || options.algorithm === 'none') {
-    return groups;
-  }
+  const doSimplify = strength > 0 && options.algorithm !== 'none';
 
-  const allScales = groups.flatMap((group) => group.rings.map((ring) => ringScale(ring)));
+  const allScales = groups.flatMap((group) =>
+    group.rings.map((ring) => (doSimplify ? ringScale(ring) : 1))
+  );
   const referenceScale =
     allScales.length === 0
       ? 1
       : allScales.reduce((acc, value) => acc + value, 0) / allScales.length;
 
-  return groups.map((group) => ({
-    color: group.color,
-    rings: group.rings.map((ring) => {
-      const simplified = simplifyRing(
-        ring,
-        options.algorithm,
-        strength,
-        referenceScale,
-        options.sizeCompensation
-      );
-      return simplified.length >= 3 ? simplified : ring;
-    }),
-  }));
+  const minPathSize = Math.max(0, options.minPathSize);
+  const out: MergedColorBoundaries[] = [];
+
+  for (const group of groups) {
+    const rings = group.rings
+      .map((ring) => {
+        if (!doSimplify) return ring;
+        const simplified = simplifyRing(
+          ring,
+          options.algorithm,
+          strength,
+          referenceScale,
+          options.sizeCompensation
+        );
+        return simplified.length >= 3 ? simplified : ring;
+      })
+      .filter((ring) => ringMaxDimension(ring) >= minPathSize);
+
+    if (rings.length > 0) {
+      out.push({ color: group.color, rings });
+    }
+  }
+
+  return out;
 }

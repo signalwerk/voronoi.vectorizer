@@ -24,6 +24,7 @@ interface ConfigPanelProps {
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
+  pathSimplificationMinPathSize01: number;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -37,6 +38,7 @@ interface ConfigPanelProps {
   onPathSimplificationAlgorithmChange: (value: PathSimplificationAlgorithm) => void;
   onPathSimplificationStrengthChange: (value: number) => void;
   onPathSimplificationSizeCompensationChange: (value: boolean) => void;
+  onPathSimplificationMinPathSize01Change: (value: number) => void;
   simplificationOriginalPoints?: number | null;
   simplificationOptimizedPoints?: number | null;
   onExportSVG: () => void;
@@ -58,6 +60,7 @@ export function ConfigPanel({
   pathSimplificationAlgorithm,
   pathSimplificationStrength,
   pathSimplificationSizeCompensation,
+  pathSimplificationMinPathSize01,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -71,6 +74,7 @@ export function ConfigPanel({
   onPathSimplificationAlgorithmChange,
   onPathSimplificationStrengthChange,
   onPathSimplificationSizeCompensationChange,
+  onPathSimplificationMinPathSize01Change,
   simplificationOriginalPoints = null,
   simplificationOptimizedPoints = null,
   onExportSVG,
@@ -305,6 +309,26 @@ export function ConfigPanel({
               >
                 <Switch.Thumb className="switch__thumb" />
               </Switch.Root>
+            </div>
+
+            <div className="config-panel__control">
+              <Label.Root className="config-panel__label" htmlFor="min-path-size">
+                Min Path Size Filter (0-1): {pathSimplificationMinPathSize01.toFixed(3)}
+              </Label.Root>
+              <Slider.Root
+                className="slider"
+                id="min-path-size"
+                min={0}
+                max={1}
+                step={0.001}
+                value={[pathSimplificationMinPathSize01]}
+                onValueChange={([value]) => onPathSimplificationMinPathSize01Change(value)}
+              >
+                <Slider.Track className="slider__track">
+                  <Slider.Range className="slider__range" />
+                </Slider.Track>
+                <Slider.Thumb className="slider__thumb" />
+              </Slider.Root>
             </div>
 
             {pathSimplificationAlgorithm !== 'none' &&

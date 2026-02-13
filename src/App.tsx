@@ -3,12 +3,10 @@ import { Dropzone } from './components/Dropzone/Dropzone';
 import { CanvasStage } from './components/CanvasStage/CanvasStage';
 import { ConfigPanel } from './components/ConfigPanel/ConfigPanel';
 import { runPipeline } from './core/pipeline';
+import { computeSimplificationPointStats } from './core/simplificationStats';
 import { buildVoronoiSvg } from './core/svgExport';
 import { CanvasPixelSource } from './adapters/PixelSource';
 import { RENDER_CONFIG } from './config/renderConfig';
-import { mergeCellsByColor } from './core/cellMerge';
-import { shouldRenderCell, toRenderedCellColor } from './core/cellRender';
-import { simplifyMergedBoundaries } from './core/simplify';
 import type { PathSimplificationAlgorithm, PipelineOutput, SeedStrategy } from './core/types';
 import './App.css';
 
@@ -49,6 +47,7 @@ function App() {
   const [pathSimplificationStrength, setPathSimplificationStrength] = useState(0);
   const [pathSimplificationSizeCompensation, setPathSimplificationSizeCompensation] =
     useState(false);
+  const [pathSimplificationMinPathSize01, setPathSimplificationMinPathSize01] = useState(0);
   
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
@@ -139,6 +138,7 @@ function App() {
       pathSimplificationAlgorithm,
       pathSimplificationStrength,
       pathSimplificationSizeCompensation,
+      pathSimplificationMinPathSize01,
     });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -158,6 +158,7 @@ function App() {
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01,
     imageMeta,
   ]);
 
@@ -178,6 +179,7 @@ function App() {
       `--path-simplification-algorithm ${pathSimplificationAlgorithm}`,
       `--path-simplification-strength ${pathSimplificationStrength}`,
       `--path-simplification-size-compensation ${pathSimplificationSizeCompensation}`,
+      `--path-simplification-min-path-size01 ${pathSimplificationMinPathSize01}`,
       '--scale 1',
     ]
     // indent from the second line onwards
@@ -205,51 +207,27 @@ function App() {
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01,
   ]);
 
   const simplificationStats = useMemo(() => {
     if (!pipelineOutput) return null;
-    if (!combineSameColorCells) return null;
-    if (pathSimplificationAlgorithm === 'none') return null;
-
-    const renderPolygons: PipelineOutput['cellPolygons'] = [];
-    const renderColors: PipelineOutput['cellColors'] = [];
-
-    for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
-      const renderedColor = toRenderedCellColor(
-        pipelineOutput.cellColors[i],
-        blackAndWhiteCells
-      );
-      if (!shouldRenderCell(renderedColor, { blackAndWhiteCells, skipWhiteCells })) {
-        continue;
-      }
-      renderPolygons.push(pipelineOutput.cellPolygons[i]);
-      renderColors.push(renderedColor);
-    }
-
-    const merged = mergeCellsByColor(renderPolygons, renderColors);
-    const simplified = simplifyMergedBoundaries(merged, {
-      algorithm: pathSimplificationAlgorithm,
-      strength: pathSimplificationStrength,
-      sizeCompensation: pathSimplificationSizeCompensation,
+    return computeSimplificationPointStats(pipelineOutput, {
+      blackAndWhiteCells,
+      skipWhiteCells,
+      combineSameColorCells,
+      pathSimplificationAlgorithm,
+      pathSimplificationStrength,
+      pathSimplificationSizeCompensation,
+      pathSimplificationMinPathSize01,
     });
-
-    const originalPoints = merged.reduce(
-      (sum, group) => sum + group.rings.reduce((ringSum, ring) => ringSum + ring.length, 0),
-      0
-    );
-    const optimizedPoints = simplified.reduce(
-      (sum, group) => sum + group.rings.reduce((ringSum, ring) => ringSum + ring.length, 0),
-      0
-    );
-
-    return { originalPoints, optimizedPoints };
   }, [
     pipelineOutput,
     combineSameColorCells,
     pathSimplificationAlgorithm,
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01,
     blackAndWhiteCells,
     skipWhiteCells,
   ]);
@@ -290,6 +268,7 @@ function App() {
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
               pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
+              pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
             />
           )}
           
@@ -322,6 +301,7 @@ function App() {
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
               pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
+              pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -335,6 +315,7 @@ function App() {
               onPathSimplificationAlgorithmChange={setPathSimplificationAlgorithm}
               onPathSimplificationStrengthChange={setPathSimplificationStrength}
               onPathSimplificationSizeCompensationChange={setPathSimplificationSizeCompensation}
+              onPathSimplificationMinPathSize01Change={setPathSimplificationMinPathSize01}
               simplificationOriginalPoints={simplificationStats?.originalPoints ?? null}
               simplificationOptimizedPoints={simplificationStats?.optimizedPoints ?? null}
               onExportSVG={handleExportSVG}

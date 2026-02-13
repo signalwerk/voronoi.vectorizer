@@ -1,7 +1,7 @@
 npm run cli -- \
     --input '__DEMO/a_.2.png' \
     --output '__DEMO/a_.2_full.svg' \
-    --seed-density 86340 \
+    --seed-density 90000 \
     --seed-value '12345' \
     --seed-strategy aspect \
     --show-cells true \
@@ -14,13 +14,17 @@ npm run cli -- \
 npm run cli -- \
     --input '__DEMO/a_.2.png' \
     --output '__DEMO/a_.2_small.svg' \
-    --seed-density 81700 \
+    --seed-density 90000 \
     --seed-value '12345' \
     --seed-strategy aspect \
     --show-cells true \
     --show-voronoi false \
     --show-seeds false \
-    --black-and-white-cells false \
+    --black-and-white-cells true \
     --skip-white-cells true \
     --combine-same-color-cells true \
+    --path-simplification-algorithm rdp \
+    --path-simplification-strength 0.7 \
+    --path-simplification-size-compensation true \
+    --path-simplification-min-path-size01 0.03 \
     --scale 1

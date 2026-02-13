@@ -3,6 +3,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { BufferPixelSource } from '../src/adapters/PixelSource';
 import { runPipeline } from '../src/core/pipeline';
+import { computeSimplificationPointStats } from '../src/core/simplificationStats';
 import { buildVoronoiSvg } from '../src/core/svgExport';
 import type { PathSimplificationAlgorithm, SeedStrategy } from '../src/core/types';
 import { RENDER_CONFIG } from '../src/config/renderConfig';
@@ -22,6 +23,7 @@ interface CliOptions {
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
+  pathSimplificationMinPathSize01: number;
   scale: number;
 }
 
@@ -45,6 +47,7 @@ function usage(): string {
     '  --path-simplification-algorithm <name> none|rdp|vw|rw (default: none)',
     '  --path-simplification-strength <number> 0..1 (default: 0)',
     '  --path-simplification-size-compensation <bool> true|false (default: false)',
+    '  --path-simplification-min-path-size01 <number> 0..1 (default: 0)',
     '  --scale <number>          Output scale factor (default: 1)',
     '  --help                    Show this help',
   ].join('\n');
@@ -80,6 +83,7 @@ function parseArgs(argv: string[]): CliOptions {
     pathSimplificationAlgorithm: 'none',
     pathSimplificationStrength: 0,
     pathSimplificationSizeCompensation: false,
+    pathSimplificationMinPathSize01: 0,
     scale: 1,
   };
 
@@ -152,6 +156,12 @@ function parseArgs(argv: string[]): CliOptions {
           '--path-simplification-size-compensation'
         );
         break;
+      case '--path-simplification-min-path-size01':
+        options.pathSimplificationMinPathSize01 = toNumber(
+          value,
+          '--path-simplification-min-path-size01'
+        );
+        break;
       case '--scale':
         options.scale = toNumber(value, '--scale');
         break;
@@ -176,6 +186,10 @@ function parseArgs(argv: string[]): CliOptions {
 
   if (options.pathSimplificationStrength < 0 || options.pathSimplificationStrength > 1) {
     throw new Error('--path-simplification-strength must be in [0, 1]');
+  }
+
+  if (options.pathSimplificationMinPathSize01 < 0 || options.pathSimplificationMinPathSize01 > 1) {
+    throw new Error('--path-simplification-min-path-size01 must be in [0, 1]');
   }
 
   return options;
@@ -225,12 +239,26 @@ async function main() {
     pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
     pathSimplificationStrength: options.pathSimplificationStrength,
     pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
   });
   await fs.writeFile(outPath, svg, 'utf8');
 
   console.log(`Input: ${options.input}`);
   console.log(`Output: ${outPath}`);
   console.log(`Seeds: ${output.seedsPx.length}`);
+  const simplificationStats = computeSimplificationPointStats(output, {
+    blackAndWhiteCells: options.blackAndWhiteCells,
+    skipWhiteCells: options.skipWhiteCells,
+    combineSameColorCells: options.combineSameColorCells,
+    pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
+    pathSimplificationStrength: options.pathSimplificationStrength,
+    pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
+    pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
+  });
+  if (simplificationStats) {
+    console.log(`Original Points: ${simplificationStats.originalPoints}`);
+    console.log(`Optimized Points: ${simplificationStats.optimizedPoints}`);
+  }
 }
 
 main().catch((error: unknown) => {

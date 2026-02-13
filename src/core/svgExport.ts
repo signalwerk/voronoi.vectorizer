@@ -16,6 +16,7 @@ export interface SvgExportOptions {
   pathSimplificationAlgorithm: PathSimplificationAlgorithm;
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
+  pathSimplificationMinPathSize01: number;
 }
 
 function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
@@ -81,6 +82,9 @@ export function buildVoronoiSvg(
         algorithm: options.pathSimplificationAlgorithm,
         strength: options.pathSimplificationStrength,
         sizeCompensation: options.pathSimplificationSizeCompensation,
+        minPathSize:
+          Math.max(0, Math.min(1, options.pathSimplificationMinPathSize01)) *
+          Math.min(pipelineOutput.imageWidth, pipelineOutput.imageHeight),
       });
       for (const group of simplified) {
         const d = ringsToPathData(group.rings, scaleX, scaleY);
