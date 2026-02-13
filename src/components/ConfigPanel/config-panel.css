@@ -160,11 +160,18 @@
 
 /* Radix UI Switch Styles */
 .switch {
+  display: inline-block;
   width: 42px;
   height: 24px;
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
   background-color: #ccc;
   border-radius: 12px;
   position: relative;
+  overflow: hidden;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -174,6 +181,10 @@
 }
 
 .switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  box-sizing: border-box;
   display: block;
   width: 20px;
   height: 20px;
@@ -181,12 +192,12 @@
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
-  transform: translateX(2px);
+  transform: translateX(0);
   will-change: transform;
 }
 
 .switch[data-state="checked"] .switch__thumb {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
 /* Radix UI Slider Styles */
