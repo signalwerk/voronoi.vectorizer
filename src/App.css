@@ -7,7 +7,7 @@
 
 .app__header {
   padding: 24px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--blue-color);
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -16,12 +16,6 @@
   margin: 0 0 8px 0;
   font-size: 32px;
   font-weight: 700;
-}
-
-.app__subtitle {
-  margin: 0;
-  font-size: 16px;
-  opacity: 0.9;
 }
 
 .app__main {

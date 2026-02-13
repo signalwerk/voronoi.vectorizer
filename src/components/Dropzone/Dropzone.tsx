@@ -68,7 +68,7 @@ export function Dropzone({ onImageLoad }: DropzoneProps) {
       onClick={handleClick}
     >
       <div className="dropzone__content">
-        <div className="dropzone__icon">📁</div>
+        <div className="dropzone__icon">🖼️</div>
         <div className="dropzone__text">
           Drop an image here or click to upload
         </div>

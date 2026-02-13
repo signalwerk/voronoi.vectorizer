@@ -57,7 +57,7 @@ function App() {
   const [showCells, setShowCells] = useState(true);
   const [showVoronoi, setShowVoronoi] = useState(false);
   const [showSeeds, setShowSeeds] = useState(false);
-  const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(true);
+  const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(false);
   const [skipWhiteCells, setSkipWhiteCells] = useState(true);
   const [combineSameColorCells, setCombineSameColorCells] = useState(false);
   const [pathSimplificationAlgorithm, setPathSimplificationAlgorithm] =
@@ -283,9 +283,6 @@ function App() {
     <div className="app">
       <header className="app__header">
         <h1 className="app__title">Voronoi Image Vectorizer</h1>
-        <p className="app__subtitle">
-          Transform images into artistic Voronoi mosaics
-        </p>
       </header>
 
       <main className="app__main">
