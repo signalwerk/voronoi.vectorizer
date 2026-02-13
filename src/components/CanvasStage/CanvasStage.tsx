@@ -118,7 +118,7 @@ export function CanvasStage({
         rendererRef.current.drawMergedCellFills(scaledMergedGroups);
       } else {
         const scaledRenderPolygons = cellRender.polygons.map((polygon) =>
-          polygon.map((point) => ({ x: point.x * scale, y: point.y * scale }))
+          polygon.map((point) => ({ x: drawX + point.x * scale, y: drawY + point.y * scale }))
         );
         rendererRef.current.drawCellFills(scaledRenderPolygons, cellRender.colors);
       }

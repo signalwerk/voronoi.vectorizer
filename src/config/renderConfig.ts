@@ -4,7 +4,7 @@
  */
 export const RENDER_CONFIG = {
   // Voronoi edge styling
-  voronoiLineColor: '#000000',
+  voronoiLineColor: '#808080',
   voronoiLineWidthFraction: 0.002, // 0.2% of min dimension
   
   // Seed point styling
