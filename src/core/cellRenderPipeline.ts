@@ -1,8 +1,8 @@
-import type { MergedColorBoundaries } from './cellMerge';
-import { mergeCellsByColor } from './cellMerge';
-import { shouldRenderCell, toRenderedCellColor } from './cellRender';
-import { simplifyMergedBoundaries } from './simplify';
-import type { PathSimplificationAlgorithm, PipelineOutput } from './types';
+import type { MergedColorBoundaries } from "./cellMerge";
+import { mergeCellsByColor } from "./cellMerge";
+import { shouldRenderCell, toRenderedCellColor } from "./cellRender";
+import { simplifyMergedBoundaries } from "./simplify";
+import type { PathSimplificationAlgorithm, PipelineOutput } from "./types";
 
 export interface CellRenderPipelineOptions {
   blackAndWhiteCells: boolean;
@@ -15,23 +15,23 @@ export interface CellRenderPipelineOptions {
 }
 
 export interface CellRenderPipelineResult {
-  polygons: PipelineOutput['cellPolygons'];
-  colors: PipelineOutput['cellColors'];
+  polygons: PipelineOutput["cellPolygons"];
+  colors: PipelineOutput["cellColors"];
   mergedOriginal: MergedColorBoundaries[] | null;
   mergedOptimized: MergedColorBoundaries[] | null;
 }
 
 export function computeCellRenderPipeline(
   pipelineOutput: PipelineOutput,
-  options: CellRenderPipelineOptions
+  options: CellRenderPipelineOptions,
 ): CellRenderPipelineResult {
-  const polygons: PipelineOutput['cellPolygons'] = [];
-  const colors: PipelineOutput['cellColors'] = [];
+  const polygons: PipelineOutput["cellPolygons"] = [];
+  const colors: PipelineOutput["cellColors"] = [];
 
   for (let i = 0; i < pipelineOutput.cellPolygons.length; i++) {
     const renderedColor = toRenderedCellColor(
       pipelineOutput.cellColors[i],
-      options.blackAndWhiteCells
+      options.blackAndWhiteCells,
     );
     if (!shouldRenderCell(renderedColor, options)) continue;
     polygons.push(pipelineOutput.cellPolygons[i]);

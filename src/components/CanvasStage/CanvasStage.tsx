@@ -1,9 +1,12 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { Canvas2DRenderer } from '../../adapters/Renderer';
-import { fractionToPx, RENDER_CONFIG } from '../../config/renderConfig';
-import { computeCellRenderPipeline } from '../../core/cellRenderPipeline';
-import type { PathSimplificationAlgorithm, PipelineOutput } from '../../core/types';
-import './canvas-stage.css';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { Canvas2DRenderer } from "../../adapters/Renderer";
+import { fractionToPx, RENDER_CONFIG } from "../../config/renderConfig";
+import { computeCellRenderPipeline } from "../../core/cellRenderPipeline";
+import type {
+  PathSimplificationAlgorithm,
+  PipelineOutput,
+} from "../../core/types";
+import "./canvas-stage.css";
 
 interface CanvasStageProps {
   image: HTMLImageElement | null;
@@ -43,7 +46,7 @@ export function CanvasStage({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStateRef = useRef<{ x: number; y: number } | null>(null);
-  
+
   // Initialize renderer
   useEffect(() => {
     if (canvasRef.current && !rendererRef.current) {
@@ -56,16 +59,21 @@ export function CanvasStage({
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, [image]);
-  
+
   // Render function
   const render = useCallback(() => {
-    if (!canvasRef.current || !rendererRef.current || !image || !pipelineOutput) {
+    if (
+      !canvasRef.current ||
+      !rendererRef.current ||
+      !image ||
+      !pipelineOutput
+    ) {
       return;
     }
-    
+
     const container = containerRef.current;
     if (!container) return;
-    
+
     // Calculate base fit scale maintaining aspect ratio
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
@@ -85,18 +93,24 @@ export function CanvasStage({
     const drawHeight = image.naturalHeight * scale;
     const drawX = containerWidth / 2 + pan.x - drawWidth / 2;
     const drawY = containerHeight / 2 + pan.y - drawHeight / 2;
-    
+
     // Clear canvas
     rendererRef.current.clear();
-    
+
     // Layer 1: Original image (optional)
     if (showOriginal) {
-      rendererRef.current.drawOriginalImage(image, drawWidth, drawHeight, drawX, drawY);
+      rendererRef.current.drawOriginalImage(
+        image,
+        drawWidth,
+        drawHeight,
+        drawX,
+        drawY,
+      );
     }
 
     // Layer 2: Filled Voronoi cells (optional)
     const scaledPolygons = pipelineOutput.cellPolygons.map((polygon) =>
-      polygon.map((p) => ({ x: drawX + p.x * scale, y: drawY + p.y * scale }))
+      polygon.map((p) => ({ x: drawX + p.x * scale, y: drawY + p.y * scale })),
     );
     if (showCells) {
       const cellRender = computeCellRenderPipeline(pipelineOutput, {
@@ -109,55 +123,66 @@ export function CanvasStage({
         pathSimplificationMinPathSize01,
       });
       if (combineSameColorCells) {
-        const scaledMergedGroups = (cellRender.mergedOptimized ?? []).map((group) => ({
-          color: group.color,
-          rings: group.rings.map((ring) =>
-            ring.map((point) => ({ x: drawX + point.x * scale, y: drawY + point.y * scale }))
-          ),
-        }));
+        const scaledMergedGroups = (cellRender.mergedOptimized ?? []).map(
+          (group) => ({
+            color: group.color,
+            rings: group.rings.map((ring) =>
+              ring.map((point) => ({
+                x: drawX + point.x * scale,
+                y: drawY + point.y * scale,
+              })),
+            ),
+          }),
+        );
         rendererRef.current.drawMergedCellFills(scaledMergedGroups);
       } else {
         const scaledRenderPolygons = cellRender.polygons.map((polygon) =>
-          polygon.map((point) => ({ x: drawX + point.x * scale, y: drawY + point.y * scale }))
+          polygon.map((point) => ({
+            x: drawX + point.x * scale,
+            y: drawY + point.y * scale,
+          })),
         );
-        rendererRef.current.drawCellFills(scaledRenderPolygons, cellRender.colors);
+        rendererRef.current.drawCellFills(
+          scaledRenderPolygons,
+          cellRender.colors,
+        );
       }
     }
-    
+
     // Layer 3: Voronoi edges (optional)
     if (showVoronoi) {
-      const lineWidth = fractionToPx(
-        RENDER_CONFIG.voronoiLineWidthFraction,
-        image.naturalWidth,
-        image.naturalHeight
-      ) * scale;
-      
+      const lineWidth =
+        fractionToPx(
+          RENDER_CONFIG.voronoiLineWidthFraction,
+          image.naturalWidth,
+          image.naturalHeight,
+        ) * scale;
+
       rendererRef.current.drawVoronoiEdges(scaledPolygons, {
         lineColor: RENDER_CONFIG.voronoiLineColor,
         lineWidth,
       });
     }
-    
+
     // Layer 4: Seed points (optional)
     if (showSeeds) {
-      const scaledSeeds = pipelineOutput.seedsPx.map(p => ({
+      const scaledSeeds = pipelineOutput.seedsPx.map((p) => ({
         x: drawX + p.x * scale,
         y: drawY + p.y * scale,
       }));
-      
-      const radius = fractionToPx(
-        RENDER_CONFIG.seedPointRadiusFraction,
-        image.naturalWidth,
-        image.naturalHeight
-      ) * scale;
-      
+
+      const radius =
+        fractionToPx(
+          RENDER_CONFIG.seedPointRadiusFraction,
+          image.naturalWidth,
+          image.naturalHeight,
+        ) * scale;
+
       rendererRef.current.drawSeedPoints(scaledSeeds, {
         pointColor: RENDER_CONFIG.seedPointColor,
         pointRadius: radius,
       });
     }
-
-
   }, [
     image,
     pipelineOutput,
@@ -176,34 +201,40 @@ export function CanvasStage({
     pan.x,
     pan.y,
   ]);
-  
+
   // Render when dependencies change
   useEffect(() => {
     requestAnimationFrame(render);
   }, [render]);
-  
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       requestAnimationFrame(render);
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [render]);
 
-  const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    dragStateRef.current = { x: event.clientX, y: event.clientY };
-  }, []);
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      setIsDragging(true);
+      dragStateRef.current = { x: event.clientX, y: event.clientY };
+    },
+    [],
+  );
 
-  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragStateRef.current) return;
-    const dx = event.clientX - dragStateRef.current.x;
-    const dy = event.clientY - dragStateRef.current.y;
-    dragStateRef.current = { x: event.clientX, y: event.clientY };
-    setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
-  }, []);
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!dragStateRef.current) return;
+      const dx = event.clientX - dragStateRef.current.x;
+      const dy = event.clientY - dragStateRef.current.y;
+      dragStateRef.current = { x: event.clientX, y: event.clientY };
+      setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    },
+    [],
+  );
 
   const handlePointerUp = useCallback(() => {
     setIsDragging(false);
@@ -229,7 +260,10 @@ export function CanvasStage({
           : containerHeight / image.naturalHeight;
 
       const currentZoom = zoom;
-      const nextZoom = Math.max(0.2, Math.min(30, currentZoom * (event.deltaY < 0 ? 1.1 : 0.9)));
+      const nextZoom = Math.max(
+        0.2,
+        Math.min(30, currentZoom * (event.deltaY < 0 ? 1.1 : 0.9)),
+      );
       if (nextZoom === currentZoom) return;
 
       const s1 = baseScale * currentZoom;
@@ -249,18 +283,18 @@ export function CanvasStage({
       setZoom(nextZoom);
       setPan({ x: panX2, y: panY2 });
     },
-    [image, pan.x, pan.y, zoom]
+    [image, pan.x, pan.y, zoom],
   );
 
   const handleDoubleClick = useCallback(() => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, []);
-  
+
   return (
     <div
       ref={containerRef}
-      className={`canvas-stage ${isDragging ? 'canvas-stage--dragging' : ''}`}
+      className={`canvas-stage ${isDragging ? "canvas-stage--dragging" : ""}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

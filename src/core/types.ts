@@ -32,8 +32,8 @@ export interface CellColor {
 /**
  * Strategy for computing normalized area
  */
-export type SeedStrategy = 'aspect' | 'maxAspect';
-export type PathSimplificationAlgorithm = 'none' | 'rdp' | 'vw' | 'rw';
+export type SeedStrategy = "aspect" | "maxAspect";
+export type PathSimplificationAlgorithm = "none" | "rdp" | "vw" | "rw";
 
 /**
  * Complete output from the Voronoi pipeline
@@ -56,6 +56,6 @@ export interface PipelineInput {
   seedDensity: number;
   seedValue: string;
   seedStrategy: SeedStrategy;
-  colorMode: 'cellAverage' | 'seedPoint';
+  colorMode: "cellAverage" | "seedPoint";
   renderScale?: number;
 }

@@ -1,4 +1,4 @@
-import type { PixelPoint } from '../types';
+import type { PixelPoint } from "../types";
 
 interface Node {
   index: number;
@@ -9,10 +9,15 @@ interface Node {
 }
 
 function triangleArea(a: PixelPoint, b: PixelPoint, c: PixelPoint): number {
-  return Math.abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2);
+  return Math.abs(
+    (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2,
+  );
 }
 
-export function simplifyVwClosedRing(ring: PixelPoint[], areaThreshold: number): PixelPoint[] {
+export function simplifyVwClosedRing(
+  ring: PixelPoint[],
+  areaThreshold: number,
+): PixelPoint[] {
   if (ring.length <= 3 || areaThreshold <= 0) {
     return [...ring];
   }

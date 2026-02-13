@@ -1,4 +1,4 @@
-import type { CellColor, PixelPoint } from './types';
+import type { CellColor, PixelPoint } from "./types";
 
 export interface MergeCellsOptions {
   tolerance?: number;
@@ -25,7 +25,7 @@ function colorKey(color: CellColor): string {
 }
 
 function parseColorKey(key: string): CellColor {
-  const [r, g, b, a] = key.split(',').map(Number);
+  const [r, g, b, a] = key.split(",").map(Number);
   return { r, g, b, a };
 }
 
@@ -40,7 +40,7 @@ function pointKey(point: PixelPoint, tolerance: number): string {
 }
 
 function pointFromKey(key: string, tolerance: number): PixelPoint {
-  const [qx, qy] = key.split(',').map(Number);
+  const [qx, qy] = key.split(",").map(Number);
   return {
     x: qx * tolerance,
     y: qy * tolerance,
@@ -73,7 +73,10 @@ function sanitizePolygon(polygon: PixelPoint[], tolerance: number): string[] {
   return compact;
 }
 
-function buildBoundaryEdges(polygons: PixelPoint[][], tolerance: number): DirectedEdge[] {
+function buildBoundaryEdges(
+  polygons: PixelPoint[][],
+  tolerance: number,
+): DirectedEdge[] {
   const edgeMap = new Map<string, EdgeAccumulator>();
 
   for (const polygon of polygons) {
@@ -130,7 +133,7 @@ function selectNextEdge(
   candidates: number[],
   edges: DirectedEdge[],
   used: boolean[],
-  tolerance: number
+  tolerance: number,
 ): number | null {
   const currentFrom = pointFromKey(current.from, tolerance);
   const currentTo = pointFromKey(current.to, tolerance);
@@ -196,7 +199,13 @@ function traceRings(edges: DirectedEdge[], tolerance: number): PixelPoint[][] {
         break;
       }
 
-      const nextIndex = selectNextEdge(current, candidates, edges, used, tolerance);
+      const nextIndex = selectNextEdge(
+        current,
+        candidates,
+        edges,
+        used,
+        tolerance,
+      );
       if (nextIndex === null) {
         break;
       }
@@ -220,7 +229,7 @@ function traceRings(edges: DirectedEdge[], tolerance: number): PixelPoint[][] {
 export function mergeCellsByColor(
   polygons: PixelPoint[][],
   colors: CellColor[],
-  options: MergeCellsOptions = {}
+  options: MergeCellsOptions = {},
 ): MergedColorBoundaries[] {
   const tolerance = options.tolerance ?? 1e-6;
   const groupedPolygons = new Map<string, PixelPoint[][]>();

@@ -1,14 +1,18 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Dropzone } from './components/Dropzone/Dropzone';
-import { CanvasStage } from './components/CanvasStage/CanvasStage';
-import { ConfigPanel } from './components/ConfigPanel/ConfigPanel';
-import { runPipeline } from './core/pipeline';
-import { computeSimplificationPointStats } from './core/simplificationStats';
-import { buildVoronoiSvg } from './core/svgExport';
-import { CanvasPixelSource } from './adapters/PixelSource';
-import { RENDER_CONFIG } from './config/renderConfig';
-import type { PathSimplificationAlgorithm, PipelineOutput, SeedStrategy } from './core/types';
-import './App.css';
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Dropzone } from "./components/Dropzone/Dropzone";
+import { CanvasStage } from "./components/CanvasStage/CanvasStage";
+import { ConfigPanel } from "./components/ConfigPanel/ConfigPanel";
+import { runPipeline } from "./core/pipeline";
+import { computeSimplificationPointStats } from "./core/simplificationStats";
+import { buildVoronoiSvg } from "./core/svgExport";
+import { CanvasPixelSource } from "./adapters/PixelSource";
+import { RENDER_CONFIG } from "./config/renderConfig";
+import type {
+  PathSimplificationAlgorithm,
+  PipelineOutput,
+  SeedStrategy,
+} from "./core/types";
+import "./App.css";
 
 interface ImageMeta {
   name: string;
@@ -17,7 +21,7 @@ interface ImageMeta {
 }
 
 function baseName(fileName: string): string {
-  return fileName.replace(/\.[^.]+$/, '');
+  return fileName.replace(/\.[^.]+$/, "");
 }
 
 function shellQuote(value: string): string {
@@ -25,27 +29,29 @@ function shellQuote(value: string): string {
 }
 
 function imageToDataUrl(image: HTMLImageElement): string {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error('Failed to get 2D context for image embedding');
+    throw new Error("Failed to get 2D context for image embedding");
   }
   ctx.drawImage(image, 0, 0);
-  return canvas.toDataURL('image/png');
+  return canvas.toDataURL("image/png");
 }
 
 function App() {
   // Image state
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [imageMeta, setImageMeta] = useState<ImageMeta | null>(null);
-  
+
   // Configuration state
-  const [seedDensity, setSeedDensity] = useState(RENDER_CONFIG.defaultSeedDensity);
+  const [seedDensity, setSeedDensity] = useState(
+    RENDER_CONFIG.defaultSeedDensity,
+  );
   const [seedValue, setSeedValue] = useState(RENDER_CONFIG.defaultSeedValue);
-  const [seedStrategy] = useState<SeedStrategy>('aspect');
-  
+  const [seedStrategy] = useState<SeedStrategy>("aspect");
+
   // Display toggles
   const [showOriginal, setShowOriginal] = useState(false);
   const [showCells, setShowCells] = useState(true);
@@ -55,22 +61,29 @@ function App() {
   const [skipWhiteCells, setSkipWhiteCells] = useState(true);
   const [combineSameColorCells, setCombineSameColorCells] = useState(false);
   const [pathSimplificationAlgorithm, setPathSimplificationAlgorithm] =
-    useState<PathSimplificationAlgorithm>('none');
-  const [pathSimplificationStrength, setPathSimplificationStrength] = useState(0);
-  const [pathSimplificationSizeCompensation, setPathSimplificationSizeCompensation] =
-    useState(true);
-  const [pathSimplificationMinPathSize01, setPathSimplificationMinPathSize01] = useState(0);
-  
+    useState<PathSimplificationAlgorithm>("none");
+  const [pathSimplificationStrength, setPathSimplificationStrength] =
+    useState(0);
+  const [
+    pathSimplificationSizeCompensation,
+    setPathSimplificationSizeCompensation,
+  ] = useState(true);
+  const [pathSimplificationMinPathSize01, setPathSimplificationMinPathSize01] =
+    useState(0);
+
   // Pipeline state
-  const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
+  const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(
+    null,
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copyCLIButtonLabel, setCopyCLIButtonLabel] = useState('Copy CLI Command');
-  
+  const [copyCLIButtonLabel, setCopyCLIButtonLabel] =
+    useState("Copy CLI Command");
+
   // Refs
   const canvasStageRef = useRef<HTMLDivElement>(null);
   const pixelSourceRef = useRef<CanvasPixelSource | null>(null);
-  
+
   // Handle image load
   const handleImageLoad = useCallback((file: File, img: HTMLImageElement) => {
     setImage(img);
@@ -79,25 +92,25 @@ function App() {
       width: img.naturalWidth,
       height: img.naturalHeight,
     });
-    
+
     // Clean up old pixel source
     if (pixelSourceRef.current) {
       pixelSourceRef.current.dispose();
     }
-    
+
     // Create new pixel source
     pixelSourceRef.current = new CanvasPixelSource(img);
   }, []);
-  
+
   // Run pipeline
   useEffect(() => {
     if (!image || !imageMeta || !pixelSourceRef.current) {
       return;
     }
-    
+
     setIsProcessing(true);
     setError(null);
-    
+
     // Run pipeline in next frame to keep UI responsive
     requestAnimationFrame(() => {
       try {
@@ -108,30 +121,30 @@ function App() {
             seedDensity,
             seedValue,
             seedStrategy,
-            colorMode: 'seedPoint',
+            colorMode: "seedPoint",
           },
-          pixelSourceRef.current!
+          pixelSourceRef.current!,
         );
-        
+
         setPipelineOutput(output);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Pipeline error');
-        console.error('Pipeline error:', err);
+        setError(err instanceof Error ? err.message : "Pipeline error");
+        console.error("Pipeline error:", err);
       } finally {
         setIsProcessing(false);
       }
     });
   }, [image, imageMeta, seedDensity, seedValue, seedStrategy]);
-  
+
   // Randomize seed
   const handleRandomizeSeed = useCallback(() => {
     setSeedValue(Math.random().toString(36).substring(2, 15));
   }, []);
-  
+
   // Export SVG
   const handleExportSVG = useCallback(() => {
     if (!pipelineOutput) {
-      alert('No Voronoi data to export');
+      alert("No Voronoi data to export");
       return;
     }
 
@@ -142,7 +155,7 @@ function App() {
       try {
         originalImageDataUrl = imageToDataUrl(image);
       } catch (err) {
-        console.error('Failed to embed original image in SVG:', err);
+        console.error("Failed to embed original image in SVG:", err);
       }
     }
     const svgMarkup = buildVoronoiSvg(pipelineOutput, {
@@ -161,11 +174,11 @@ function App() {
       pathSimplificationSizeCompensation,
       pathSimplificationMinPathSize01,
     });
-    const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${baseName(imageMeta?.name ?? 'voronoi')}-${Date.now()}.svg`;
+    a.download = `${baseName(imageMeta?.name ?? "voronoi")}-${Date.now()}.svg`;
     a.click();
     URL.revokeObjectURL(url);
   }, [
@@ -187,9 +200,9 @@ function App() {
 
   const handleCopyCLICommand = useCallback(async () => {
     const command = [
-      'npm run cli --',
-      `--input ${shellQuote('/path/to/input-image.jpg')}`,
-      `--output ${shellQuote('/path/to/output.svg')}`,
+      "npm run cli --",
+      `--input ${shellQuote("/path/to/input-image.jpg")}`,
+      `--output ${shellQuote("/path/to/output.svg")}`,
       `--seed-density ${seedDensity}`,
       `--seed-value ${shellQuote(seedValue)}`,
       `--seed-strategy ${seedStrategy}`,
@@ -204,18 +217,18 @@ function App() {
       `--path-simplification-strength ${pathSimplificationStrength}`,
       `--path-simplification-size-compensation ${pathSimplificationSizeCompensation}`,
       `--path-simplification-min-path-size01 ${pathSimplificationMinPathSize01}`,
-      '--scale 1',
+      "--scale 1",
     ]
-    // indent from the second line onwards
-    .map((line, index) => (index === 0 ? line : '    ' + line)  )
-    .join(' \\\n');
+      // indent from the second line onwards
+      .map((line, index) => (index === 0 ? line : "    " + line))
+      .join(" \\\n");
 
     try {
       await navigator.clipboard.writeText(command);
-      setCopyCLIButtonLabel('Command Copied');
-      setTimeout(() => setCopyCLIButtonLabel('Copy CLI Command'), 1500);
+      setCopyCLIButtonLabel("Command Copied");
+      setTimeout(() => setCopyCLIButtonLabel("Copy CLI Command"), 1500);
     } catch (err) {
-      console.error('Clipboard copy failed:', err);
+      console.error("Clipboard copy failed:", err);
       alert(`Copy failed. Command:\\n\\n${command}`);
     }
   }, [
@@ -256,7 +269,7 @@ function App() {
     blackAndWhiteCells,
     skipWhiteCells,
   ]);
-  
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -265,7 +278,7 @@ function App() {
       }
     };
   }, []);
-  
+
   return (
     <div className="app">
       <header className="app__header">
@@ -274,7 +287,7 @@ function App() {
           Transform images into artistic Voronoi mosaics
         </p>
       </header>
-      
+
       <main className="app__main">
         <div className="app__canvas-container" ref={canvasStageRef}>
           {!image ? (
@@ -292,24 +305,18 @@ function App() {
               combineSameColorCells={combineSameColorCells}
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
-              pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
+              pathSimplificationSizeCompensation={
+                pathSimplificationSizeCompensation
+              }
               pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
             />
           )}
-          
-          {isProcessing && (
-            <div className="app__processing">
-              Processing...
-            </div>
-          )}
-          
-          {error && (
-            <div className="app__error">
-              Error: {error}
-            </div>
-          )}
+
+          {isProcessing && <div className="app__processing">Processing...</div>}
+
+          {error && <div className="app__error">Error: {error}</div>}
         </div>
-        
+
         <aside className="app__sidebar">
           {image && (
             <ConfigPanel
@@ -325,7 +332,9 @@ function App() {
               combineSameColorCells={combineSameColorCells}
               pathSimplificationAlgorithm={pathSimplificationAlgorithm}
               pathSimplificationStrength={pathSimplificationStrength}
-              pathSimplificationSizeCompensation={pathSimplificationSizeCompensation}
+              pathSimplificationSizeCompensation={
+                pathSimplificationSizeCompensation
+              }
               pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
@@ -337,12 +346,22 @@ function App() {
               onBlackAndWhiteCellsChange={setBlackAndWhiteCells}
               onSkipWhiteCellsChange={setSkipWhiteCells}
               onCombineSameColorCellsChange={setCombineSameColorCells}
-              onPathSimplificationAlgorithmChange={setPathSimplificationAlgorithm}
+              onPathSimplificationAlgorithmChange={
+                setPathSimplificationAlgorithm
+              }
               onPathSimplificationStrengthChange={setPathSimplificationStrength}
-              onPathSimplificationSizeCompensationChange={setPathSimplificationSizeCompensation}
-              onPathSimplificationMinPathSize01Change={setPathSimplificationMinPathSize01}
-              simplificationOriginalPoints={simplificationStats?.originalPoints ?? null}
-              simplificationOptimizedPoints={simplificationStats?.optimizedPoints ?? null}
+              onPathSimplificationSizeCompensationChange={
+                setPathSimplificationSizeCompensation
+              }
+              onPathSimplificationMinPathSize01Change={
+                setPathSimplificationMinPathSize01
+              }
+              simplificationOriginalPoints={
+                simplificationStats?.originalPoints ?? null
+              }
+              simplificationOptimizedPoints={
+                simplificationStats?.optimizedPoints ?? null
+              }
               onExportSVG={handleExportSVG}
               onCopyCLICommand={handleCopyCLICommand}
               copyCLIButtonLabel={copyCLIButtonLabel}

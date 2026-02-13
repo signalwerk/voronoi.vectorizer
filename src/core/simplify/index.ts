@@ -1,8 +1,8 @@
-import type { MergedColorBoundaries } from '../cellMerge';
-import type { PathSimplificationAlgorithm, PixelPoint } from '../types';
-import { simplifyRdpClosedRing } from './rdp';
-import { simplifyRwClosedRing } from './rw';
-import { simplifyVwClosedRing } from './vw';
+import type { MergedColorBoundaries } from "../cellMerge";
+import type { PathSimplificationAlgorithm, PixelPoint } from "../types";
+import { simplifyRdpClosedRing } from "./rdp";
+import { simplifyRwClosedRing } from "./rw";
+import { simplifyVwClosedRing } from "./vw";
 
 export interface PathSimplificationOptions {
   algorithm: PathSimplificationAlgorithm;
@@ -38,13 +38,13 @@ function simplifyRing(
   algorithm: PathSimplificationAlgorithm,
   strength: number,
   referenceScale: number,
-  sizeCompensation: boolean
+  sizeCompensation: boolean,
 ): PixelPoint[] {
   if (ring.length <= 3) {
     return [...ring];
   }
 
-  const algorithmStrengthMultiplier = algorithm === 'vw' ? 4 : 1;
+  const algorithmStrengthMultiplier = algorithm === "vw" ? 4 : 1;
   const tunedStrength = strength * algorithmStrengthMultiplier;
   const scale = ringScale(ring);
   const rawEpsilon = scale * tunedStrength * 0.05;
@@ -54,13 +54,13 @@ function simplifyRing(
   const areaThreshold = rawAreaThreshold * compensation * compensation;
 
   switch (algorithm) {
-    case 'none':
+    case "none":
       return [...ring];
-    case 'rdp':
+    case "rdp":
       return simplifyRdpClosedRing(ring, epsilon);
-    case 'vw':
+    case "vw":
       return simplifyVwClosedRing(ring, areaThreshold);
-    case 'rw':
+    case "rw":
       return simplifyRwClosedRing(ring, epsilon);
     default:
       return [...ring];
@@ -85,13 +85,13 @@ function ringMaxDimension(ring: PixelPoint[]): number {
 
 export function simplifyMergedBoundaries(
   groups: MergedColorBoundaries[],
-  options: PathSimplificationOptions
+  options: PathSimplificationOptions,
 ): MergedColorBoundaries[] {
   const strength = clamp01(options.strength);
-  const doSimplify = strength > 0 && options.algorithm !== 'none';
+  const doSimplify = strength > 0 && options.algorithm !== "none";
 
   const allScales = groups.flatMap((group) =>
-    group.rings.map((ring) => (doSimplify ? ringScale(ring) : 1))
+    group.rings.map((ring) => (doSimplify ? ringScale(ring) : 1)),
   );
   const referenceScale =
     allScales.length === 0
@@ -110,7 +110,7 @@ export function simplifyMergedBoundaries(
           options.algorithm,
           strength,
           referenceScale,
-          options.sizeCompensation
+          options.sizeCompensation,
         );
         return simplified.length >= 3 ? simplified : ring;
       })

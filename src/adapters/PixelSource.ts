@@ -2,7 +2,7 @@
  * PixelSource interface and browser implementation
  * Adapter pattern for image data access
  */
-import type { ImageDataLike } from '../core/colorSampling';
+import type { ImageDataLike } from "../core/colorSampling";
 
 /**
  * Abstract interface for accessing pixel data
@@ -20,30 +20,30 @@ export interface PixelSource {
 export class CanvasPixelSource implements PixelSource {
   public readonly width: number;
   public readonly height: number;
-  
+
   private imageData: ImageDataLike | null = null;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  
+
   constructor(image: HTMLImageElement) {
     this.width = image.naturalWidth;
     this.height = image.naturalHeight;
-    
+
     // Create offscreen canvas
-    this.canvas = document.createElement('canvas');
+    this.canvas = document.createElement("canvas");
     this.canvas.width = this.width;
     this.canvas.height = this.height;
-    
-    const ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+
+    const ctx = this.canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) {
-      throw new Error('Failed to get 2D context');
+      throw new Error("Failed to get 2D context");
     }
     this.ctx = ctx;
-    
+
     // Draw image to canvas
     this.ctx.drawImage(image, 0, 0);
   }
-  
+
   /**
    * Get image data (cached after first call)
    */
@@ -53,7 +53,7 @@ export class CanvasPixelSource implements PixelSource {
     }
     return this.imageData;
   }
-  
+
   /**
    * Clean up resources
    */

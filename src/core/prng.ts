@@ -2,7 +2,7 @@
  * Seeded pseudo-random number generator
  * Provides deterministic randomness for reproducible results
  */
-import seedrandom from 'seedrandom';
+import seedrandom from "seedrandom";
 
 export class SeededRandom {
   private rng: seedrandom.PRNG;

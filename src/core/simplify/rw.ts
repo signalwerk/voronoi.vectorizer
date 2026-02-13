@@ -1,6 +1,10 @@
-import type { PixelPoint } from '../types';
+import type { PixelPoint } from "../types";
 
-function pointLineDistance(point: PixelPoint, start: PixelPoint, end: PixelPoint): number {
+function pointLineDistance(
+  point: PixelPoint,
+  start: PixelPoint,
+  end: PixelPoint,
+): number {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
 
@@ -8,7 +12,10 @@ function pointLineDistance(point: PixelPoint, start: PixelPoint, end: PixelPoint
     return Math.hypot(point.x - start.x, point.y - start.y);
   }
 
-  return Math.abs((point.x - start.x) * dy - (point.y - start.y) * dx) / Math.hypot(dx, dy);
+  return (
+    Math.abs((point.x - start.x) * dy - (point.y - start.y) * dx) /
+    Math.hypot(dx, dy)
+  );
 }
 
 function simplifyOpenRw(points: PixelPoint[], epsilon: number): PixelPoint[] {
@@ -36,7 +43,10 @@ function simplifyOpenRw(points: PixelPoint[], epsilon: number): PixelPoint[] {
   return simplified;
 }
 
-export function simplifyRwClosedRing(ring: PixelPoint[], epsilon: number): PixelPoint[] {
+export function simplifyRwClosedRing(
+  ring: PixelPoint[],
+  epsilon: number,
+): PixelPoint[] {
   if (ring.length <= 3 || epsilon <= 0) {
     return [...ring];
   }

@@ -80,7 +80,7 @@
   .app__main {
     flex-direction: column;
   }
-  
+
   .app__sidebar {
     width: 100%;
     border-left: none;

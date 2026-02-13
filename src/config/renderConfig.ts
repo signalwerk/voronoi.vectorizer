@@ -4,16 +4,16 @@
  */
 export const RENDER_CONFIG = {
   // Voronoi edge styling
-  voronoiLineColor: '#808080',
+  voronoiLineColor: "#808080",
   voronoiLineWidthFraction: 0.002, // 0.2% of min dimension
-  
+
   // Seed point styling
-  seedPointColor: '#ff0000',
+  seedPointColor: "#ff0000",
   seedPointRadiusFraction: 0.002, // 0.5% of min dimension
-  
+
   // Default UI values
   defaultSeedDensity: 90_000,
-  defaultSeedValue: '12345',
+  defaultSeedValue: "12345",
 };
 
 /**
@@ -22,7 +22,7 @@ export const RENDER_CONFIG = {
 export function fractionToPx(
   fraction: number,
   imageWidth: number,
-  imageHeight: number
+  imageHeight: number,
 ): number {
   const minDimension = Math.min(imageWidth, imageHeight);
   return fraction * minDimension;

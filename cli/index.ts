@@ -1,12 +1,15 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import sharp from 'sharp';
-import { BufferPixelSource } from '../src/adapters/PixelSource';
-import { runPipeline } from '../src/core/pipeline';
-import { computeSimplificationPointStats } from '../src/core/simplificationStats';
-import { buildVoronoiSvg } from '../src/core/svgExport';
-import type { PathSimplificationAlgorithm, SeedStrategy } from '../src/core/types';
-import { RENDER_CONFIG } from '../src/config/renderConfig';
+import fs from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";
+import { BufferPixelSource } from "../src/adapters/PixelSource";
+import { runPipeline } from "../src/core/pipeline";
+import { computeSimplificationPointStats } from "../src/core/simplificationStats";
+import { buildVoronoiSvg } from "../src/core/svgExport";
+import type {
+  PathSimplificationAlgorithm,
+  SeedStrategy,
+} from "../src/core/types";
+import { RENDER_CONFIG } from "../src/config/renderConfig";
 
 interface CliOptions {
   input: string;
@@ -30,35 +33,37 @@ interface CliOptions {
 
 function usage(): string {
   return [
-    'Usage:',
-    '  npm run cli -- --input <path> [options]',
-    '',
-    'Options:',
-    '  --input <path>            Input image path (required)',
-    '  --output <path>           Output SVG path (default: <input>.svg)',
-    '  --seed-density <number>   Seed density (default: 100)',
-    '  --seed-value <string>     Seed value (default: 12345)',
-    '  --seed-strategy <mode>    aspect|maxAspect (default: aspect)',
-    '  --show-original <bool>    true|false (default: false)',
-    '  --show-cells <bool>       true|false (default: true)',
-    '  --show-voronoi <bool>     true|false (default: true)',
-    '  --show-seeds <bool>       true|false (default: false)',
-    '  --black-and-white-cells <bool>  true|false (default: false)',
-    '  --skip-white-cells <bool>       true|false (default: false)',
-    '  --combine-same-color-cells <bool> true|false (default: false)',
-    '  --path-simplification-algorithm <name> none|rdp|vw|rw (default: none)',
-    '  --path-simplification-strength <number> 0..1 (default: 0)',
-    '  --path-simplification-size-compensation <bool> true|false (default: false)',
-    '  --path-simplification-min-path-size01 <number> 0..1 (default: 0)',
-    '  --scale <number>          Output scale factor (default: 1)',
-    '  --help                    Show this help',
-  ].join('\n');
+    "Usage:",
+    "  npm run cli -- --input <path> [options]",
+    "",
+    "Options:",
+    "  --input <path>            Input image path (required)",
+    "  --output <path>           Output SVG path (default: <input>.svg)",
+    "  --seed-density <number>   Seed density (default: 100)",
+    "  --seed-value <string>     Seed value (default: 12345)",
+    "  --seed-strategy <mode>    aspect|maxAspect (default: aspect)",
+    "  --show-original <bool>    true|false (default: false)",
+    "  --show-cells <bool>       true|false (default: true)",
+    "  --show-voronoi <bool>     true|false (default: true)",
+    "  --show-seeds <bool>       true|false (default: false)",
+    "  --black-and-white-cells <bool>  true|false (default: false)",
+    "  --skip-white-cells <bool>       true|false (default: false)",
+    "  --combine-same-color-cells <bool> true|false (default: false)",
+    "  --path-simplification-algorithm <name> none|rdp|vw|rw (default: none)",
+    "  --path-simplification-strength <number> 0..1 (default: 0)",
+    "  --path-simplification-size-compensation <bool> true|false (default: false)",
+    "  --path-simplification-min-path-size01 <number> 0..1 (default: 0)",
+    "  --scale <number>          Output scale factor (default: 1)",
+    "  --help                    Show this help",
+  ].join("\n");
 }
 
 function toBool(value: string, name: string): boolean {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  throw new Error(`Invalid value for ${name}: ${value} (expected true or false)`);
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new Error(
+    `Invalid value for ${name}: ${value} (expected true or false)`,
+  );
 }
 
 function toNumber(value: string, name: string): number {
@@ -71,11 +76,11 @@ function toNumber(value: string, name: string): number {
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
-    input: '',
+    input: "",
     output: undefined,
     seedDensity: RENDER_CONFIG.defaultSeedDensity,
     seedValue: RENDER_CONFIG.defaultSeedValue,
-    seedStrategy: 'aspect',
+    seedStrategy: "aspect",
     showOriginal: false,
     showCells: true,
     showVoronoi: true,
@@ -83,7 +88,7 @@ function parseArgs(argv: string[]): CliOptions {
     blackAndWhiteCells: false,
     skipWhiteCells: false,
     combineSameColorCells: false,
-    pathSimplificationAlgorithm: 'none',
+    pathSimplificationAlgorithm: "none",
     pathSimplificationStrength: 0,
     pathSimplificationSizeCompensation: false,
     pathSimplificationMinPathSize01: 0,
@@ -93,83 +98,94 @@ function parseArgs(argv: string[]): CliOptions {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
 
-    if (arg === '--help') {
+    if (arg === "--help") {
       console.log(usage());
       process.exit(0);
     }
 
-    if (!arg.startsWith('--')) {
+    if (!arg.startsWith("--")) {
       throw new Error(`Unexpected argument: ${arg}`);
     }
 
     const value = argv[i + 1];
-    if (value === undefined || value.startsWith('--')) {
+    if (value === undefined || value.startsWith("--")) {
       throw new Error(`Missing value for ${arg}`);
     }
 
     switch (arg) {
-      case '--input':
+      case "--input":
         options.input = value;
         break;
-      case '--output':
+      case "--output":
         options.output = value;
         break;
-      case '--seed-density':
-        options.seedDensity = toNumber(value, '--seed-density');
+      case "--seed-density":
+        options.seedDensity = toNumber(value, "--seed-density");
         break;
-      case '--seed-value':
+      case "--seed-value":
         options.seedValue = value;
         break;
-      case '--seed-strategy':
-        if (value !== 'aspect' && value !== 'maxAspect') {
+      case "--seed-strategy":
+        if (value !== "aspect" && value !== "maxAspect") {
           throw new Error(`Invalid --seed-strategy: ${value}`);
         }
         options.seedStrategy = value;
         break;
-      case '--show-original':
-        options.showOriginal = toBool(value, '--show-original');
+      case "--show-original":
+        options.showOriginal = toBool(value, "--show-original");
         break;
-      case '--show-cells':
-        options.showCells = toBool(value, '--show-cells');
+      case "--show-cells":
+        options.showCells = toBool(value, "--show-cells");
         break;
-      case '--show-voronoi':
-        options.showVoronoi = toBool(value, '--show-voronoi');
+      case "--show-voronoi":
+        options.showVoronoi = toBool(value, "--show-voronoi");
         break;
-      case '--show-seeds':
-        options.showSeeds = toBool(value, '--show-seeds');
+      case "--show-seeds":
+        options.showSeeds = toBool(value, "--show-seeds");
         break;
-      case '--black-and-white-cells':
-        options.blackAndWhiteCells = toBool(value, '--black-and-white-cells');
+      case "--black-and-white-cells":
+        options.blackAndWhiteCells = toBool(value, "--black-and-white-cells");
         break;
-      case '--skip-white-cells':
-        options.skipWhiteCells = toBool(value, '--skip-white-cells');
+      case "--skip-white-cells":
+        options.skipWhiteCells = toBool(value, "--skip-white-cells");
         break;
-      case '--combine-same-color-cells':
-        options.combineSameColorCells = toBool(value, '--combine-same-color-cells');
+      case "--combine-same-color-cells":
+        options.combineSameColorCells = toBool(
+          value,
+          "--combine-same-color-cells",
+        );
         break;
-      case '--path-simplification-algorithm':
-        if (value !== 'none' && value !== 'rdp' && value !== 'vw' && value !== 'rw') {
+      case "--path-simplification-algorithm":
+        if (
+          value !== "none" &&
+          value !== "rdp" &&
+          value !== "vw" &&
+          value !== "rw"
+        ) {
           throw new Error(`Invalid --path-simplification-algorithm: ${value}`);
         }
         options.pathSimplificationAlgorithm = value;
         break;
-      case '--path-simplification-strength':
-        options.pathSimplificationStrength = toNumber(value, '--path-simplification-strength');
+      case "--path-simplification-strength":
+        options.pathSimplificationStrength = toNumber(
+          value,
+          "--path-simplification-strength",
+        );
         break;
-      case '--path-simplification-size-compensation':
+      case "--path-simplification-size-compensation":
         options.pathSimplificationSizeCompensation = toBool(
           value,
-          '--path-simplification-size-compensation'
+          "--path-simplification-size-compensation",
         );
         break;
-      case '--path-simplification-min-path-size01':
+      case "--path-simplification-min-path-size01":
         options.pathSimplificationMinPathSize01 = toNumber(
           value,
-          '--path-simplification-min-path-size01'
+          "--path-simplification-min-path-size01",
         );
         break;
-      case '--scale':
-        options.scale = toNumber(value, '--scale');
+      case "--scale":
+        options.scale = toNumber(value, "--scale");
         break;
       default:
         throw new Error(`Unknown option: ${arg}`);
@@ -179,23 +195,29 @@ function parseArgs(argv: string[]): CliOptions {
   }
 
   if (!options.input) {
-    throw new Error('--input is required');
+    throw new Error("--input is required");
   }
 
   if (options.seedDensity <= 0) {
-    throw new Error('--seed-density must be > 0');
+    throw new Error("--seed-density must be > 0");
   }
 
   if (options.scale <= 0) {
-    throw new Error('--scale must be > 0');
+    throw new Error("--scale must be > 0");
   }
 
-  if (options.pathSimplificationStrength < 0 || options.pathSimplificationStrength > 1) {
-    throw new Error('--path-simplification-strength must be in [0, 1]');
+  if (
+    options.pathSimplificationStrength < 0 ||
+    options.pathSimplificationStrength > 1
+  ) {
+    throw new Error("--path-simplification-strength must be in [0, 1]");
   }
 
-  if (options.pathSimplificationMinPathSize01 < 0 || options.pathSimplificationMinPathSize01 > 1) {
-    throw new Error('--path-simplification-min-path-size01 must be in [0, 1]');
+  if (
+    options.pathSimplificationMinPathSize01 < 0 ||
+    options.pathSimplificationMinPathSize01 > 1
+  ) {
+    throw new Error("--path-simplification-min-path-size01 must be in [0, 1]");
   }
 
   return options;
@@ -217,7 +239,11 @@ async function main() {
   const pixelSource = new BufferPixelSource(
     raw.info.width,
     raw.info.height,
-    new Uint8ClampedArray(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength)
+    new Uint8ClampedArray(
+      raw.data.buffer,
+      raw.data.byteOffset,
+      raw.data.byteLength,
+    ),
   );
 
   const output = runPipeline(
@@ -227,18 +253,18 @@ async function main() {
       seedDensity: options.seedDensity,
       seedValue: options.seedValue,
       seedStrategy: options.seedStrategy,
-      colorMode: 'seedPoint',
+      colorMode: "seedPoint",
     },
-    pixelSource
+    pixelSource,
   );
 
   const outPath = options.output ?? defaultOutputPath(options.input);
   let originalImageDataUrl: string | undefined;
   if (options.showOriginal) {
     const sourceBuffer = await fs.readFile(options.input);
-    const format = (await sharp(sourceBuffer).metadata()).format ?? 'png';
-    const mimeType = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
-    originalImageDataUrl = `data:${mimeType};base64,${sourceBuffer.toString('base64')}`;
+    const format = (await sharp(sourceBuffer).metadata()).format ?? "png";
+    const mimeType = format === "jpeg" ? "image/jpeg" : `image/${format}`;
+    originalImageDataUrl = `data:${mimeType};base64,${sourceBuffer.toString("base64")}`;
   }
   const svg = buildVoronoiSvg(output, {
     width: output.imageWidth * options.scale,
@@ -253,10 +279,11 @@ async function main() {
     combineSameColorCells: options.combineSameColorCells,
     pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
     pathSimplificationStrength: options.pathSimplificationStrength,
-    pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
+    pathSimplificationSizeCompensation:
+      options.pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
   });
-  await fs.writeFile(outPath, svg, 'utf8');
+  await fs.writeFile(outPath, svg, "utf8");
 
   console.log(`Input: ${options.input}`);
   console.log(`Output: ${outPath}`);
@@ -267,7 +294,8 @@ async function main() {
     combineSameColorCells: options.combineSameColorCells,
     pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
     pathSimplificationStrength: options.pathSimplificationStrength,
-    pathSimplificationSizeCompensation: options.pathSimplificationSizeCompensation,
+    pathSimplificationSizeCompensation:
+      options.pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
   });
   if (simplificationStats) {
@@ -279,7 +307,7 @@ async function main() {
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`CLI error: ${message}`);
-  console.error('');
+  console.error("");
   console.error(usage());
   process.exit(1);
 });

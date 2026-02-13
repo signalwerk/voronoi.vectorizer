@@ -1,4 +1,4 @@
-import type { CellColor } from './types';
+import type { CellColor } from "./types";
 
 export interface CellRenderOptions {
   blackAndWhiteCells: boolean;
@@ -7,7 +7,7 @@ export interface CellRenderOptions {
 
 export function toRenderedCellColor(
   color: CellColor,
-  blackAndWhiteCells: boolean
+  blackAndWhiteCells: boolean,
 ): CellColor {
   if (!blackAndWhiteCells) {
     return color;
@@ -27,7 +27,10 @@ export function isWhiteCell(color: CellColor): boolean {
   return color.r === 255 && color.g === 255 && color.b === 255;
 }
 
-export function shouldRenderCell(color: CellColor, options: CellRenderOptions): boolean {
+export function shouldRenderCell(
+  color: CellColor,
+  options: CellRenderOptions,
+): boolean {
   if (!options.skipWhiteCells) {
     return true;
   }

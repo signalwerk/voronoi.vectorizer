@@ -1,6 +1,10 @@
-import type { PixelPoint } from '../types';
+import type { PixelPoint } from "../types";
 
-function perpendicularDistance(point: PixelPoint, start: PixelPoint, end: PixelPoint): number {
+function perpendicularDistance(
+  point: PixelPoint,
+  start: PixelPoint,
+  end: PixelPoint,
+): number {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
 
@@ -10,7 +14,8 @@ function perpendicularDistance(point: PixelPoint, start: PixelPoint, end: PixelP
     return Math.hypot(px, py);
   }
 
-  const t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy);
+  const t =
+    ((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy);
   const projX = start.x + t * dx;
   const projY = start.y + t * dy;
   return Math.hypot(point.x - projX, point.y - projY);
@@ -43,7 +48,10 @@ function simplifyOpen(points: PixelPoint[], epsilon: number): PixelPoint[] {
   return [...left.slice(0, -1), ...right];
 }
 
-export function simplifyRdpClosedRing(ring: PixelPoint[], epsilon: number): PixelPoint[] {
+export function simplifyRdpClosedRing(
+  ring: PixelPoint[],
+  epsilon: number,
+): PixelPoint[] {
   if (ring.length <= 3 || epsilon <= 0) {
     return [...ring];
   }

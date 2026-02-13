@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import * as Switch from '@radix-ui/react-switch';
-import * as Label from '@radix-ui/react-label';
-import * as Slider from '@radix-ui/react-slider';
-import type { PathSimplificationAlgorithm } from '../../core/types';
-import './config-panel.css';
+import { useState } from "react";
+import * as Switch from "@radix-ui/react-switch";
+import * as Label from "@radix-ui/react-label";
+import * as Slider from "@radix-ui/react-slider";
+import type { PathSimplificationAlgorithm } from "../../core/types";
+import "./config-panel.css";
 
 interface ImageMeta {
   name: string;
@@ -36,7 +36,9 @@ interface ConfigPanelProps {
   onBlackAndWhiteCellsChange: (value: boolean) => void;
   onSkipWhiteCellsChange: (value: boolean) => void;
   onCombineSameColorCellsChange: (value: boolean) => void;
-  onPathSimplificationAlgorithmChange: (value: PathSimplificationAlgorithm) => void;
+  onPathSimplificationAlgorithmChange: (
+    value: PathSimplificationAlgorithm,
+  ) => void;
   onPathSimplificationStrengthChange: (value: number) => void;
   onPathSimplificationSizeCompensationChange: (value: boolean) => void;
   onPathSimplificationMinPathSize01Change: (value: number) => void;
@@ -80,11 +82,11 @@ export function ConfigPanel({
   simplificationOptimizedPoints = null,
   onExportSVG,
   onCopyCLICommand,
-  copyCLIButtonLabel = 'Copy CLI Command',
+  copyCLIButtonLabel = "Copy CLI Command",
 }: ConfigPanelProps) {
-  type EditableField = 'density' | 'simplify-strength' | 'min-path-size';
+  type EditableField = "density" | "simplify-strength" | "min-path-size";
   const [editingField, setEditingField] = useState<EditableField | null>(null);
-  const [editingValue, setEditingValue] = useState('');
+  const [editingValue, setEditingValue] = useState("");
 
   const startEditing = (field: EditableField, value: number) => {
     setEditingField(field);
@@ -93,7 +95,7 @@ export function ConfigPanel({
 
   const cancelEditing = () => {
     setEditingField(null);
-    setEditingValue('');
+    setEditingValue("");
   };
 
   const commitEditing = () => {
@@ -103,13 +105,16 @@ export function ConfigPanel({
       return;
     }
 
-    if (editingField === 'density') {
-      const clamped = Math.max(10, Math.min(100_000, Math.round(parsed / 10) * 10));
+    if (editingField === "density") {
+      const clamped = Math.max(
+        10,
+        Math.min(100_000, Math.round(parsed / 10) * 10),
+      );
       onSeedDensityChange(clamped);
-    } else if (editingField === 'simplify-strength') {
+    } else if (editingField === "simplify-strength") {
       const clamped = Math.max(0, Math.min(1, parsed));
       onPathSimplificationStrengthChange(clamped);
-    } else if (editingField === 'min-path-size') {
+    } else if (editingField === "min-path-size") {
       const clamped = Math.max(0, Math.min(1, parsed));
       onPathSimplificationMinPathSize01Change(clamped);
     }
@@ -143,13 +148,13 @@ export function ConfigPanel({
           </div>
         </div>
       )}
-      
+
       {/* Seed Configuration */}
       <div className="config-panel__section">
         <h3 className="config-panel__title">Seed Configuration</h3>
-        
+
         <div className="config-panel__control">
-          {editingField === 'density' ? (
+          {editingField === "density" ? (
             <input
               className="config-panel__inline-input"
               autoFocus
@@ -157,15 +162,15 @@ export function ConfigPanel({
               onChange={(e) => setEditingValue(e.target.value)}
               onBlur={commitEditing}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') commitEditing();
-                if (e.key === 'Escape') cancelEditing();
+                if (e.key === "Enter") commitEditing();
+                if (e.key === "Escape") cancelEditing();
               }}
             />
           ) : (
             <Label.Root
               className="config-panel__label"
               htmlFor="density"
-              onDoubleClick={() => startEditing('density', seedDensity)}
+              onDoubleClick={() => startEditing("density", seedDensity)}
             >
               Seed Density: {seedDensity}
             </Label.Root>
@@ -185,7 +190,7 @@ export function ConfigPanel({
             <Slider.Thumb className="slider__thumb" />
           </Slider.Root>
         </div>
-        
+
         <div className="config-panel__control">
           <Label.Root className="config-panel__label" htmlFor="seed">
             Seed Value
@@ -198,20 +203,17 @@ export function ConfigPanel({
               value={seedValue}
               onChange={(e) => onSeedValueChange(e.target.value)}
             />
-            <button
-              className="config-panel__button"
-              onClick={onRandomizeSeed}
-            >
+            <button className="config-panel__button" onClick={onRandomizeSeed}>
               Randomize
             </button>
           </div>
         </div>
       </div>
-      
+
       {/* Display Toggles */}
       <div className="config-panel__section">
         <h3 className="config-panel__title">Display Options</h3>
-        
+
         <div className="config-panel__toggle">
           <Label.Root className="config-panel__toggle-label" htmlFor="original">
             Show Original Image
@@ -225,7 +227,7 @@ export function ConfigPanel({
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
         </div>
-        
+
         <div className="config-panel__toggle">
           <Label.Root className="config-panel__toggle-label" htmlFor="cells">
             Show Filled Cells
@@ -239,7 +241,7 @@ export function ConfigPanel({
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
         </div>
-        
+
         <div className="config-panel__toggle">
           <Label.Root className="config-panel__toggle-label" htmlFor="edges">
             Show Voronoi Edges
@@ -253,7 +255,7 @@ export function ConfigPanel({
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
         </div>
-        
+
         <div className="config-panel__toggle">
           <Label.Root className="config-panel__toggle-label" htmlFor="seeds">
             Show Seed Points
@@ -283,7 +285,10 @@ export function ConfigPanel({
         </div>
 
         <div className="config-panel__toggle">
-          <Label.Root className="config-panel__toggle-label" htmlFor="skip-white">
+          <Label.Root
+            className="config-panel__toggle-label"
+            htmlFor="skip-white"
+          >
             Skip White Cells
           </Label.Root>
           <Switch.Root
@@ -297,7 +302,10 @@ export function ConfigPanel({
         </div>
 
         <div className="config-panel__toggle">
-          <Label.Root className="config-panel__toggle-label" htmlFor="combine-color-cells">
+          <Label.Root
+            className="config-panel__toggle-label"
+            htmlFor="combine-color-cells"
+          >
             Combine Same Color Cells
           </Label.Root>
           <Switch.Root
@@ -313,7 +321,10 @@ export function ConfigPanel({
         {combineSameColorCells && (
           <>
             <div className="config-panel__control">
-              <Label.Root className="config-panel__label" htmlFor="simplify-algorithm">
+              <Label.Root
+                className="config-panel__label"
+                htmlFor="simplify-algorithm"
+              >
                 Path Simplification Algorithm
               </Label.Root>
               <select
@@ -321,7 +332,9 @@ export function ConfigPanel({
                 className="config-panel__select"
                 value={pathSimplificationAlgorithm}
                 onChange={(e) =>
-                  onPathSimplificationAlgorithmChange(e.target.value as PathSimplificationAlgorithm)
+                  onPathSimplificationAlgorithmChange(
+                    e.target.value as PathSimplificationAlgorithm,
+                  )
                 }
               >
                 <option value="none">No Simplification</option>
@@ -332,7 +345,7 @@ export function ConfigPanel({
             </div>
 
             <div className="config-panel__control">
-              {editingField === 'simplify-strength' ? (
+              {editingField === "simplify-strength" ? (
                 <input
                   className="config-panel__inline-input"
                   autoFocus
@@ -340,8 +353,8 @@ export function ConfigPanel({
                   onChange={(e) => setEditingValue(e.target.value)}
                   onBlur={commitEditing}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') commitEditing();
-                    if (e.key === 'Escape') cancelEditing();
+                    if (e.key === "Enter") commitEditing();
+                    if (e.key === "Escape") cancelEditing();
                   }}
                 />
               ) : (
@@ -349,10 +362,14 @@ export function ConfigPanel({
                   className="config-panel__label"
                   htmlFor="simplify-strength"
                   onDoubleClick={() =>
-                    startEditing('simplify-strength', pathSimplificationStrength)
+                    startEditing(
+                      "simplify-strength",
+                      pathSimplificationStrength,
+                    )
                   }
                 >
-                  Simplification Strength: {pathSimplificationStrength.toFixed(2)}
+                  Simplification Strength:{" "}
+                  {pathSimplificationStrength.toFixed(2)}
                 </Label.Root>
               )}
               <Slider.Root
@@ -362,7 +379,9 @@ export function ConfigPanel({
                 max={1}
                 step={0.01}
                 value={[pathSimplificationStrength]}
-                onValueChange={([value]) => onPathSimplificationStrengthChange(value)}
+                onValueChange={([value]) =>
+                  onPathSimplificationStrengthChange(value)
+                }
               >
                 <Slider.Track className="slider__track">
                   <Slider.Range className="slider__range" />
@@ -372,7 +391,10 @@ export function ConfigPanel({
             </div>
 
             <div className="config-panel__toggle">
-              <Label.Root className="config-panel__toggle-label" htmlFor="size-comp">
+              <Label.Root
+                className="config-panel__toggle-label"
+                htmlFor="size-comp"
+              >
                 Simplification Size Compensation
               </Label.Root>
               <Switch.Root
@@ -386,7 +408,7 @@ export function ConfigPanel({
             </div>
 
             <div className="config-panel__control">
-              {editingField === 'min-path-size' ? (
+              {editingField === "min-path-size" ? (
                 <input
                   className="config-panel__inline-input"
                   autoFocus
@@ -394,8 +416,8 @@ export function ConfigPanel({
                   onChange={(e) => setEditingValue(e.target.value)}
                   onBlur={commitEditing}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') commitEditing();
-                    if (e.key === 'Escape') cancelEditing();
+                    if (e.key === "Enter") commitEditing();
+                    if (e.key === "Escape") cancelEditing();
                   }}
                 />
               ) : (
@@ -403,10 +425,14 @@ export function ConfigPanel({
                   className="config-panel__label"
                   htmlFor="min-path-size"
                   onDoubleClick={() =>
-                    startEditing('min-path-size', pathSimplificationMinPathSize01)
+                    startEditing(
+                      "min-path-size",
+                      pathSimplificationMinPathSize01,
+                    )
                   }
                 >
-                  Min Path Size Filter (0-1): {pathSimplificationMinPathSize01.toFixed(3)}
+                  Min Path Size Filter (0-1):{" "}
+                  {pathSimplificationMinPathSize01.toFixed(3)}
                 </Label.Root>
               )}
               <Slider.Root
@@ -416,7 +442,9 @@ export function ConfigPanel({
                 max={1}
                 step={0.001}
                 value={[pathSimplificationMinPathSize01]}
-                onValueChange={([value]) => onPathSimplificationMinPathSize01Change(value)}
+                onValueChange={([value]) =>
+                  onPathSimplificationMinPathSize01Change(value)
+                }
               >
                 <Slider.Track className="slider__track">
                   <Slider.Range className="slider__range" />
@@ -425,18 +453,22 @@ export function ConfigPanel({
               </Slider.Root>
             </div>
 
-            {pathSimplificationAlgorithm !== 'none' &&
+            {pathSimplificationAlgorithm !== "none" &&
               simplificationOriginalPoints !== null &&
               simplificationOptimizedPoints !== null && (
                 <div className="config-panel__info">
                   <div className="config-panel__info-row">
-                    <span className="config-panel__info-label">Original Points:</span>
+                    <span className="config-panel__info-label">
+                      Original Points:
+                    </span>
                     <span className="config-panel__info-value">
                       {simplificationOriginalPoints}
                     </span>
                   </div>
                   <div className="config-panel__info-row">
-                    <span className="config-panel__info-label">Optimized Points:</span>
+                    <span className="config-panel__info-label">
+                      Optimized Points:
+                    </span>
                     <span className="config-panel__info-value">
                       {simplificationOptimizedPoints}
                     </span>
@@ -446,7 +478,7 @@ export function ConfigPanel({
           </>
         )}
       </div>
-      
+
       {/* Export */}
       {imageMeta && (
         <div className="config-panel__section">
