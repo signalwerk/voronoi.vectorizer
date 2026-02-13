@@ -5,6 +5,8 @@ import type { PathSimplificationAlgorithm, PipelineOutput } from './types';
 export interface SvgExportOptions {
   width: number;
   height: number;
+  showOriginal: boolean;
+  originalImageDataUrl?: string;
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
@@ -57,8 +59,16 @@ export function buildVoronoiSvg(
   const parts: string[] = [];
   parts.push('<?xml version="1.0" encoding="UTF-8"?>');
   parts.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${options.width} ${options.height}" width="${options.width}" height="${options.height}">`
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${options.width} ${options.height}" width="${options.width}" height="${options.height}">`
   );
+
+  parts.push('<g id="layer-original">');
+  if (options.showOriginal && options.originalImageDataUrl) {
+    parts.push(
+      `<image xlink:href="${options.originalImageDataUrl}" x="0" y="0" width="${options.width}" height="${options.height}" preserveAspectRatio="none" />`
+    );
+  }
+  parts.push('</g>');
 
   const cellRender = computeCellRenderPipeline(pipelineOutput, {
     blackAndWhiteCells: options.blackAndWhiteCells,

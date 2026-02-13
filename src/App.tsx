@@ -24,6 +24,18 @@ function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }
 
+function imageToDataUrl(image: HTMLImageElement): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get 2D context for image embedding');
+  }
+  ctx.drawImage(image, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 function App() {
   // Image state
   const [image, setImage] = useState<HTMLImageElement | null>(null);
@@ -125,9 +137,19 @@ function App() {
 
     const exportWidth = pipelineOutput.imageWidth;
     const exportHeight = pipelineOutput.imageHeight;
+    let originalImageDataUrl: string | undefined;
+    if (showOriginal && image) {
+      try {
+        originalImageDataUrl = imageToDataUrl(image);
+      } catch (err) {
+        console.error('Failed to embed original image in SVG:', err);
+      }
+    }
     const svgMarkup = buildVoronoiSvg(pipelineOutput, {
       width: exportWidth,
       height: exportHeight,
+      showOriginal,
+      originalImageDataUrl,
       showCells,
       showVoronoi,
       showSeeds,
@@ -158,6 +180,8 @@ function App() {
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01,
+    showOriginal,
+    image,
     imageMeta,
   ]);
 
@@ -172,6 +196,7 @@ function App() {
       `--show-cells ${showCells}`,
       `--show-voronoi ${showVoronoi}`,
       `--show-seeds ${showSeeds}`,
+      `--show-original ${showOriginal}`,
       `--black-and-white-cells ${blackAndWhiteCells}`,
       `--skip-white-cells ${skipWhiteCells}`,
       `--combine-same-color-cells ${combineSameColorCells}`,
@@ -200,6 +225,7 @@ function App() {
     showCells,
     showVoronoi,
     showSeeds,
+    showOriginal,
     blackAndWhiteCells,
     skipWhiteCells,
     combineSameColorCells,

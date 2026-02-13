@@ -14,6 +14,7 @@ interface CliOptions {
   seedDensity: number;
   seedValue: string;
   seedStrategy: SeedStrategy;
+  showOriginal: boolean;
   showCells: boolean;
   showVoronoi: boolean;
   showSeeds: boolean;
@@ -38,6 +39,7 @@ function usage(): string {
     '  --seed-density <number>   Seed density (default: 100)',
     '  --seed-value <string>     Seed value (default: 12345)',
     '  --seed-strategy <mode>    aspect|maxAspect (default: aspect)',
+    '  --show-original <bool>    true|false (default: false)',
     '  --show-cells <bool>       true|false (default: true)',
     '  --show-voronoi <bool>     true|false (default: true)',
     '  --show-seeds <bool>       true|false (default: false)',
@@ -74,6 +76,7 @@ function parseArgs(argv: string[]): CliOptions {
     seedDensity: RENDER_CONFIG.defaultSeedDensity,
     seedValue: RENDER_CONFIG.defaultSeedValue,
     seedStrategy: 'aspect',
+    showOriginal: false,
     showCells: true,
     showVoronoi: true,
     showSeeds: false,
@@ -122,6 +125,9 @@ function parseArgs(argv: string[]): CliOptions {
           throw new Error(`Invalid --seed-strategy: ${value}`);
         }
         options.seedStrategy = value;
+        break;
+      case '--show-original':
+        options.showOriginal = toBool(value, '--show-original');
         break;
       case '--show-cells':
         options.showCells = toBool(value, '--show-cells');
@@ -227,9 +233,18 @@ async function main() {
   );
 
   const outPath = options.output ?? defaultOutputPath(options.input);
+  let originalImageDataUrl: string | undefined;
+  if (options.showOriginal) {
+    const sourceBuffer = await fs.readFile(options.input);
+    const format = (await sharp(sourceBuffer).metadata()).format ?? 'png';
+    const mimeType = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
+    originalImageDataUrl = `data:${mimeType};base64,${sourceBuffer.toString('base64')}`;
+  }
   const svg = buildVoronoiSvg(output, {
     width: output.imageWidth * options.scale,
     height: output.imageHeight * options.scale,
+    showOriginal: options.showOriginal,
+    originalImageDataUrl,
     showCells: options.showCells,
     showVoronoi: options.showVoronoi,
     showSeeds: options.showSeeds,
