@@ -3,7 +3,8 @@ import { Canvas2DRenderer } from '../../adapters/Renderer';
 import { fractionToPx, RENDER_CONFIG } from '../../config/renderConfig';
 import { mergeCellsByColor } from '../../core/cellMerge';
 import { shouldRenderCell, toRenderedCellColor } from '../../core/cellRender';
-import type { PipelineOutput } from '../../core/types';
+import { simplifyMergedBoundaries } from '../../core/simplify';
+import type { PathSimplificationAlgorithm, PipelineOutput } from '../../core/types';
 import './canvas-stage.css';
 
 interface CanvasStageProps {
@@ -16,6 +17,8 @@ interface CanvasStageProps {
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
   combineSameColorCells: boolean;
+  pathSimplificationAlgorithm: PathSimplificationAlgorithm;
+  pathSimplificationStrength: number;
 }
 
 export function CanvasStage({
@@ -28,6 +31,8 @@ export function CanvasStage({
   blackAndWhiteCells,
   skipWhiteCells,
   combineSameColorCells,
+  pathSimplificationAlgorithm,
+  pathSimplificationStrength,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +108,11 @@ export function CanvasStage({
       }
       if (combineSameColorCells) {
         const mergedGroups = mergeCellsByColor(renderPolygons, renderColors);
-        rendererRef.current.drawMergedCellFills(mergedGroups);
+        const simplifiedGroups = simplifyMergedBoundaries(mergedGroups, {
+          algorithm: pathSimplificationAlgorithm,
+          strength: pathSimplificationStrength,
+        });
+        rendererRef.current.drawMergedCellFills(simplifiedGroups);
       } else {
         rendererRef.current.drawCellFills(renderPolygons, renderColors);
       }
@@ -153,6 +162,8 @@ export function CanvasStage({
     blackAndWhiteCells,
     skipWhiteCells,
     combineSameColorCells,
+    pathSimplificationAlgorithm,
+    pathSimplificationStrength,
   ]);
   
   // Render when dependencies change

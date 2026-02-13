@@ -75,6 +75,20 @@
   border-color: #666;
 }
 
+.config-panel__select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+.config-panel__select:focus {
+  outline: none;
+  border-color: #666;
+}
+
 .config-panel__button {
   padding: 8px 16px;
   background-color: #f0f0f0;

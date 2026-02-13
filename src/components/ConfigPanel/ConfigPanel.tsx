@@ -1,6 +1,7 @@
 import * as Switch from '@radix-ui/react-switch';
 import * as Label from '@radix-ui/react-label';
 import * as Slider from '@radix-ui/react-slider';
+import type { PathSimplificationAlgorithm } from '../../core/types';
 import './config-panel.css';
 
 interface ImageMeta {
@@ -20,6 +21,8 @@ interface ConfigPanelProps {
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
   combineSameColorCells: boolean;
+  pathSimplificationAlgorithm: PathSimplificationAlgorithm;
+  pathSimplificationStrength: number;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -30,6 +33,8 @@ interface ConfigPanelProps {
   onBlackAndWhiteCellsChange: (value: boolean) => void;
   onSkipWhiteCellsChange: (value: boolean) => void;
   onCombineSameColorCellsChange: (value: boolean) => void;
+  onPathSimplificationAlgorithmChange: (value: PathSimplificationAlgorithm) => void;
+  onPathSimplificationStrengthChange: (value: number) => void;
   onExportSVG: () => void;
   onCopyCLICommand: () => void;
   copyCLIButtonLabel?: string;
@@ -46,6 +51,8 @@ export function ConfigPanel({
   blackAndWhiteCells,
   skipWhiteCells,
   combineSameColorCells,
+  pathSimplificationAlgorithm,
+  pathSimplificationStrength,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -56,6 +63,8 @@ export function ConfigPanel({
   onBlackAndWhiteCellsChange,
   onSkipWhiteCellsChange,
   onCombineSameColorCellsChange,
+  onPathSimplificationAlgorithmChange,
+  onPathSimplificationStrengthChange,
   onExportSVG,
   onCopyCLICommand,
   copyCLIButtonLabel = 'Copy CLI Command',
@@ -234,6 +243,48 @@ export function ConfigPanel({
             <Switch.Thumb className="switch__thumb" />
           </Switch.Root>
         </div>
+
+        {combineSameColorCells && (
+          <>
+            <div className="config-panel__control">
+              <Label.Root className="config-panel__label" htmlFor="simplify-algorithm">
+                Path Simplification Algorithm
+              </Label.Root>
+              <select
+                id="simplify-algorithm"
+                className="config-panel__select"
+                value={pathSimplificationAlgorithm}
+                onChange={(e) =>
+                  onPathSimplificationAlgorithmChange(e.target.value as PathSimplificationAlgorithm)
+                }
+              >
+                <option value="rdp">Ramer-Douglas-Peucker (RDP)</option>
+                <option value="vw">Visvalingam-Whyatt (VW)</option>
+                <option value="rw">Reumann-Witkam (RW)</option>
+              </select>
+            </div>
+
+            <div className="config-panel__control">
+              <Label.Root className="config-panel__label" htmlFor="simplify-strength">
+                Simplification Strength: {pathSimplificationStrength.toFixed(2)}
+              </Label.Root>
+              <Slider.Root
+                className="slider"
+                id="simplify-strength"
+                min={0}
+                max={1}
+                step={0.01}
+                value={[pathSimplificationStrength]}
+                onValueChange={([value]) => onPathSimplificationStrengthChange(value)}
+              >
+                <Slider.Track className="slider__track">
+                  <Slider.Range className="slider__range" />
+                </Slider.Track>
+                <Slider.Thumb className="slider__thumb" />
+              </Slider.Root>
+            </div>
+          </>
+        )}
       </div>
       
       {/* Export */}

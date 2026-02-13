@@ -1,7 +1,8 @@
 import { mergeCellsByColor } from './cellMerge';
 import { fractionToPx, RENDER_CONFIG } from '../config/renderConfig';
 import { shouldRenderCell, toRenderedCellColor } from './cellRender';
-import type { PipelineOutput } from './types';
+import { simplifyMergedBoundaries } from './simplify';
+import type { PathSimplificationAlgorithm, PipelineOutput } from './types';
 
 export interface SvgExportOptions {
   width: number;
@@ -12,6 +13,8 @@ export interface SvgExportOptions {
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
   combineSameColorCells: boolean;
+  pathSimplificationAlgorithm: PathSimplificationAlgorithm;
+  pathSimplificationStrength: number;
 }
 
 function colorToRgb(color: PipelineOutput['cellColors'][number]): string {
@@ -73,7 +76,11 @@ export function buildVoronoiSvg(
   if (options.showCells) {
     if (options.combineSameColorCells) {
       const merged = mergeCellsByColor(renderPolygons, renderColors);
-      for (const group of merged) {
+      const simplified = simplifyMergedBoundaries(merged, {
+        algorithm: options.pathSimplificationAlgorithm,
+        strength: options.pathSimplificationStrength,
+      });
+      for (const group of simplified) {
         const d = ringsToPathData(group.rings, scaleX, scaleY);
         if (!d) continue;
         parts.push(

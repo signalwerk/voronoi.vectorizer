@@ -6,7 +6,7 @@ import { runPipeline } from './core/pipeline';
 import { buildVoronoiSvg } from './core/svgExport';
 import { CanvasPixelSource } from './adapters/PixelSource';
 import { RENDER_CONFIG } from './config/renderConfig';
-import type { PipelineOutput, SeedStrategy } from './core/types';
+import type { PathSimplificationAlgorithm, PipelineOutput, SeedStrategy } from './core/types';
 import './App.css';
 
 interface ImageMeta {
@@ -41,6 +41,9 @@ function App() {
   const [blackAndWhiteCells, setBlackAndWhiteCells] = useState(false);
   const [skipWhiteCells, setSkipWhiteCells] = useState(false);
   const [combineSameColorCells, setCombineSameColorCells] = useState(false);
+  const [pathSimplificationAlgorithm, setPathSimplificationAlgorithm] =
+    useState<PathSimplificationAlgorithm>('rdp');
+  const [pathSimplificationStrength, setPathSimplificationStrength] = useState(0);
   
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(null);
@@ -128,6 +131,8 @@ function App() {
       blackAndWhiteCells,
       skipWhiteCells,
       combineSameColorCells,
+      pathSimplificationAlgorithm,
+      pathSimplificationStrength,
     });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -144,6 +149,8 @@ function App() {
     blackAndWhiteCells,
     skipWhiteCells,
     combineSameColorCells,
+    pathSimplificationAlgorithm,
+    pathSimplificationStrength,
     imageMeta,
   ]);
 
@@ -161,6 +168,8 @@ function App() {
       `--black-and-white-cells ${blackAndWhiteCells}`,
       `--skip-white-cells ${skipWhiteCells}`,
       `--combine-same-color-cells ${combineSameColorCells}`,
+      `--path-simplification-algorithm ${pathSimplificationAlgorithm}`,
+      `--path-simplification-strength ${pathSimplificationStrength}`,
       '--scale 1',
     ]
     // indent from the second line onwards
@@ -185,6 +194,8 @@ function App() {
     blackAndWhiteCells,
     skipWhiteCells,
     combineSameColorCells,
+    pathSimplificationAlgorithm,
+    pathSimplificationStrength,
   ]);
   
   // Cleanup on unmount
@@ -220,6 +231,8 @@ function App() {
               blackAndWhiteCells={blackAndWhiteCells}
               skipWhiteCells={skipWhiteCells}
               combineSameColorCells={combineSameColorCells}
+              pathSimplificationAlgorithm={pathSimplificationAlgorithm}
+              pathSimplificationStrength={pathSimplificationStrength}
             />
           )}
           
@@ -249,6 +262,8 @@ function App() {
               blackAndWhiteCells={blackAndWhiteCells}
               skipWhiteCells={skipWhiteCells}
               combineSameColorCells={combineSameColorCells}
+              pathSimplificationAlgorithm={pathSimplificationAlgorithm}
+              pathSimplificationStrength={pathSimplificationStrength}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -259,6 +274,8 @@ function App() {
               onBlackAndWhiteCellsChange={setBlackAndWhiteCells}
               onSkipWhiteCellsChange={setSkipWhiteCells}
               onCombineSameColorCellsChange={setCombineSameColorCells}
+              onPathSimplificationAlgorithmChange={setPathSimplificationAlgorithm}
+              onPathSimplificationStrengthChange={setPathSimplificationStrength}
               onExportSVG={handleExportSVG}
               onCopyCLICommand={handleCopyCLICommand}
               copyCLIButtonLabel={copyCLIButtonLabel}

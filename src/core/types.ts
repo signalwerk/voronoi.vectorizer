@@ -33,6 +33,7 @@ export interface CellColor {
  * Strategy for computing normalized area
  */
 export type SeedStrategy = 'aspect' | 'maxAspect';
+export type PathSimplificationAlgorithm = 'rdp' | 'vw' | 'rw';
 
 /**
  * Complete output from the Voronoi pipeline

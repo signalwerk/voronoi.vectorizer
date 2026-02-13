@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { BufferPixelSource } from '../src/adapters/PixelSource';
 import { runPipeline } from '../src/core/pipeline';
 import { buildVoronoiSvg } from '../src/core/svgExport';
-import type { SeedStrategy } from '../src/core/types';
+import type { PathSimplificationAlgorithm, SeedStrategy } from '../src/core/types';
 import { RENDER_CONFIG } from '../src/config/renderConfig';
 
 interface CliOptions {
@@ -19,6 +19,8 @@ interface CliOptions {
   blackAndWhiteCells: boolean;
   skipWhiteCells: boolean;
   combineSameColorCells: boolean;
+  pathSimplificationAlgorithm: PathSimplificationAlgorithm;
+  pathSimplificationStrength: number;
   scale: number;
 }
 
@@ -39,6 +41,8 @@ function usage(): string {
     '  --black-and-white-cells <bool>  true|false (default: false)',
     '  --skip-white-cells <bool>       true|false (default: false)',
     '  --combine-same-color-cells <bool> true|false (default: false)',
+    '  --path-simplification-algorithm <name> rdp|vw|rw (default: rdp)',
+    '  --path-simplification-strength <number> 0..1 (default: 0)',
     '  --scale <number>          Output scale factor (default: 1)',
     '  --help                    Show this help',
   ].join('\n');
@@ -71,6 +75,8 @@ function parseArgs(argv: string[]): CliOptions {
     blackAndWhiteCells: false,
     skipWhiteCells: false,
     combineSameColorCells: false,
+    pathSimplificationAlgorithm: 'rdp',
+    pathSimplificationStrength: 0,
     scale: 1,
   };
 
@@ -128,6 +134,15 @@ function parseArgs(argv: string[]): CliOptions {
       case '--combine-same-color-cells':
         options.combineSameColorCells = toBool(value, '--combine-same-color-cells');
         break;
+      case '--path-simplification-algorithm':
+        if (value !== 'rdp' && value !== 'vw' && value !== 'rw') {
+          throw new Error(`Invalid --path-simplification-algorithm: ${value}`);
+        }
+        options.pathSimplificationAlgorithm = value;
+        break;
+      case '--path-simplification-strength':
+        options.pathSimplificationStrength = toNumber(value, '--path-simplification-strength');
+        break;
       case '--scale':
         options.scale = toNumber(value, '--scale');
         break;
@@ -148,6 +163,10 @@ function parseArgs(argv: string[]): CliOptions {
 
   if (options.scale <= 0) {
     throw new Error('--scale must be > 0');
+  }
+
+  if (options.pathSimplificationStrength < 0 || options.pathSimplificationStrength > 1) {
+    throw new Error('--path-simplification-strength must be in [0, 1]');
   }
 
   return options;
@@ -194,6 +213,8 @@ async function main() {
     blackAndWhiteCells: options.blackAndWhiteCells,
     skipWhiteCells: options.skipWhiteCells,
     combineSameColorCells: options.combineSameColorCells,
+    pathSimplificationAlgorithm: options.pathSimplificationAlgorithm,
+    pathSimplificationStrength: options.pathSimplificationStrength,
   });
   await fs.writeFile(outPath, svg, 'utf8');
 
