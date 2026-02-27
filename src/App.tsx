@@ -70,6 +70,9 @@ function App() {
   ] = useState(true);
   const [pathSimplificationMinPathSize01, setPathSimplificationMinPathSize01] =
     useState(0);
+  const [seedPointRadiusFraction, setSeedPointRadiusFraction] = useState(
+    RENDER_CONFIG.seedPointRadiusFraction,
+  );
 
   // Pipeline state
   const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput | null>(
@@ -173,6 +176,7 @@ function App() {
       pathSimplificationStrength,
       pathSimplificationSizeCompensation,
       pathSimplificationMinPathSize01,
+      seedPointRadiusFraction,
     });
     const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -196,6 +200,7 @@ function App() {
     showOriginal,
     image,
     imageMeta,
+    seedPointRadiusFraction,
   ]);
 
   const handleCopyCLICommand = useCallback(async () => {
@@ -217,6 +222,7 @@ function App() {
       `--path-simplification-strength ${pathSimplificationStrength}`,
       `--path-simplification-size-compensation ${pathSimplificationSizeCompensation}`,
       `--path-simplification-min-path-size01 ${pathSimplificationMinPathSize01}`,
+      `--seed-point-radius ${seedPointRadiusFraction}`,
       "--scale 1",
     ]
       // indent from the second line onwards
@@ -246,6 +252,7 @@ function App() {
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01,
+    seedPointRadiusFraction,
   ]);
 
   const simplificationStats = useMemo(() => {
@@ -306,6 +313,7 @@ function App() {
                 pathSimplificationSizeCompensation
               }
               pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
+              seedPointRadiusFraction={seedPointRadiusFraction}
             />
           )}
 
@@ -333,6 +341,7 @@ function App() {
                 pathSimplificationSizeCompensation
               }
               pathSimplificationMinPathSize01={pathSimplificationMinPathSize01}
+              seedPointRadiusFraction={seedPointRadiusFraction}
               onSeedDensityChange={setSeedDensity}
               onSeedValueChange={setSeedValue}
               onRandomizeSeed={handleRandomizeSeed}
@@ -353,6 +362,7 @@ function App() {
               onPathSimplificationMinPathSize01Change={
                 setPathSimplificationMinPathSize01
               }
+              onSeedPointRadiusFractionChange={setSeedPointRadiusFraction}
               simplificationOriginalPoints={
                 simplificationStats?.originalPoints ?? null
               }

@@ -26,6 +26,7 @@ interface ConfigPanelProps {
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
   pathSimplificationMinPathSize01: number;
+  seedPointRadiusFraction: number;
   onSeedDensityChange: (value: number) => void;
   onSeedValueChange: (value: string) => void;
   onRandomizeSeed: () => void;
@@ -42,6 +43,7 @@ interface ConfigPanelProps {
   onPathSimplificationStrengthChange: (value: number) => void;
   onPathSimplificationSizeCompensationChange: (value: boolean) => void;
   onPathSimplificationMinPathSize01Change: (value: number) => void;
+  onSeedPointRadiusFractionChange: (value: number) => void;
   simplificationOriginalPoints?: number | null;
   simplificationOptimizedPoints?: number | null;
   onExportSVG: () => void;
@@ -64,6 +66,7 @@ export function ConfigPanel({
   pathSimplificationStrength,
   pathSimplificationSizeCompensation,
   pathSimplificationMinPathSize01,
+  seedPointRadiusFraction,
   onSeedDensityChange,
   onSeedValueChange,
   onRandomizeSeed,
@@ -78,13 +81,18 @@ export function ConfigPanel({
   onPathSimplificationStrengthChange,
   onPathSimplificationSizeCompensationChange,
   onPathSimplificationMinPathSize01Change,
+  onSeedPointRadiusFractionChange,
   simplificationOriginalPoints = null,
   simplificationOptimizedPoints = null,
   onExportSVG,
   onCopyCLICommand,
   copyCLIButtonLabel = "Copy CLI Command",
 }: ConfigPanelProps) {
-  type EditableField = "density" | "simplify-strength" | "min-path-size";
+  type EditableField =
+    | "density"
+    | "simplify-strength"
+    | "min-path-size"
+    | "seed-radius";
   const [editingField, setEditingField] = useState<EditableField | null>(null);
   const [editingValue, setEditingValue] = useState("");
 
@@ -117,6 +125,9 @@ export function ConfigPanel({
     } else if (editingField === "min-path-size") {
       const clamped = Math.max(0, Math.min(1, parsed));
       onPathSimplificationMinPathSize01Change(clamped);
+    } else if (editingField === "seed-radius") {
+      const clamped = Math.max(0, Math.min(1, parsed));
+      onSeedPointRadiusFractionChange(clamped);
     }
 
     cancelEditing();
@@ -207,6 +218,46 @@ export function ConfigPanel({
               Randomize
             </button>
           </div>
+        </div>
+
+        <div className="config-panel__control">
+          {editingField === "seed-radius" ? (
+            <input
+              className="config-panel__inline-input"
+              autoFocus
+              value={editingValue}
+              onChange={(e) => setEditingValue(e.target.value)}
+              onBlur={commitEditing}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitEditing();
+                if (e.key === "Escape") cancelEditing();
+              }}
+            />
+          ) : (
+            <Label.Root
+              className="config-panel__label"
+              htmlFor="seed-radius"
+              onDoubleClick={() =>
+                startEditing("seed-radius", seedPointRadiusFraction)
+              }
+            >
+              Seed Point Radius: {seedPointRadiusFraction.toFixed(4)}
+            </Label.Root>
+          )}
+          <Slider.Root
+            className="slider"
+            id="seed-radius"
+            min={0}
+            max={0.01}
+            step={0.0001}
+            value={[seedPointRadiusFraction]}
+            onValueChange={([value]) => onSeedPointRadiusFractionChange(value)}
+          >
+            <Slider.Track className="slider__track">
+              <Slider.Range className="slider__range" />
+            </Slider.Track>
+            <Slider.Thumb className="slider__thumb" />
+          </Slider.Root>
         </div>
       </div>
 

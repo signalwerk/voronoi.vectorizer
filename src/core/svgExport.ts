@@ -17,6 +17,7 @@ export interface SvgExportOptions {
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
   pathSimplificationMinPathSize01: number;
+  seedPointRadiusFraction: number;
 }
 
 function colorToRgb(color: PipelineOutput["cellColors"][number]): string {
@@ -131,7 +132,7 @@ export function buildVoronoiSvg(
   if (options.showSeeds) {
     const radius =
       fractionToPx(
-        RENDER_CONFIG.seedPointRadiusFraction,
+        options.seedPointRadiusFraction,
         pipelineOutput.imageWidth,
         pipelineOutput.imageHeight,
       ) * styleScale;

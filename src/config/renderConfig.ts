@@ -12,7 +12,7 @@ export const RENDER_CONFIG = {
   seedPointRadiusFraction: 0.002, // 0.5% of min dimension
 
   // Default UI values
-  defaultSeedDensity: 90_000,
+  defaultSeedDensity: 10_000,
   defaultSeedValue: "12345",
 };
 

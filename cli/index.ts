@@ -28,6 +28,7 @@ interface CliOptions {
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
   pathSimplificationMinPathSize01: number;
+  seedPointRadiusFraction: number;
   scale: number;
 }
 
@@ -53,6 +54,7 @@ function usage(): string {
     "  --path-simplification-strength <number> 0..1 (default: 0)",
     "  --path-simplification-size-compensation <bool> true|false (default: false)",
     "  --path-simplification-min-path-size01 <number> 0..1 (default: 0)",
+    "  --seed-point-radius <number> 0..1 (default: 0.002)",
     "  --scale <number>          Output scale factor (default: 1)",
     "  --help                    Show this help",
   ].join("\n");
@@ -92,6 +94,7 @@ function parseArgs(argv: string[]): CliOptions {
     pathSimplificationStrength: 0,
     pathSimplificationSizeCompensation: false,
     pathSimplificationMinPathSize01: 0,
+    seedPointRadiusFraction: RENDER_CONFIG.seedPointRadiusFraction,
     scale: 1,
   };
 
@@ -184,6 +187,12 @@ function parseArgs(argv: string[]): CliOptions {
           "--path-simplification-min-path-size01",
         );
         break;
+      case "--seed-point-radius":
+        options.seedPointRadiusFraction = toNumber(
+          value,
+          "--seed-point-radius",
+        );
+        break;
       case "--scale":
         options.scale = toNumber(value, "--scale");
         break;
@@ -218,6 +227,13 @@ function parseArgs(argv: string[]): CliOptions {
     options.pathSimplificationMinPathSize01 > 1
   ) {
     throw new Error("--path-simplification-min-path-size01 must be in [0, 1]");
+  }
+
+  if (
+    options.seedPointRadiusFraction < 0 ||
+    options.seedPointRadiusFraction > 1
+  ) {
+    throw new Error("--seed-point-radius must be in [0, 1]");
   }
 
   return options;
@@ -282,6 +298,7 @@ async function main() {
     pathSimplificationSizeCompensation:
       options.pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01: options.pathSimplificationMinPathSize01,
+    seedPointRadiusFraction: options.seedPointRadiusFraction,
   });
   await fs.writeFile(outPath, svg, "utf8");
 

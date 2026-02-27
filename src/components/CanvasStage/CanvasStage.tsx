@@ -22,6 +22,7 @@ interface CanvasStageProps {
   pathSimplificationStrength: number;
   pathSimplificationSizeCompensation: boolean;
   pathSimplificationMinPathSize01: number;
+  seedPointRadiusFraction: number;
 }
 
 export function CanvasStage({
@@ -38,6 +39,7 @@ export function CanvasStage({
   pathSimplificationStrength,
   pathSimplificationSizeCompensation,
   pathSimplificationMinPathSize01,
+  seedPointRadiusFraction,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -173,7 +175,7 @@ export function CanvasStage({
 
       const radius =
         fractionToPx(
-          RENDER_CONFIG.seedPointRadiusFraction,
+          seedPointRadiusFraction,
           image.naturalWidth,
           image.naturalHeight,
         ) * scale;
@@ -197,6 +199,7 @@ export function CanvasStage({
     pathSimplificationStrength,
     pathSimplificationSizeCompensation,
     pathSimplificationMinPathSize01,
+    seedPointRadiusFraction,
     zoom,
     pan.x,
     pan.y,
